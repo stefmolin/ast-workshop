@@ -31,19 +31,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout content
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           path: content
 
       - name: Checkout thank-you-slide
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: stefmolin/thank-you-slide
           token: ${{ secrets.SLIDES_PUBLISHING_TOKEN }}
           path: thank-you-slide
 
       - name: Checkout ezslides
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: stefmolin/ezslides
           token: ${{ secrets.SLIDES_PUBLISHING_TOKEN }}
