@@ -31,19 +31,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout content
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           path: content
 
       - name: Checkout thank-you-slide
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: stefmolin/thank-you-slide
           token: ${{ secrets.SLIDES_PUBLISHING_TOKEN }}
           path: thank-you-slide
 
       - name: Checkout ezslides
-        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # v6.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           repository: stefmolin/ezslides
           token: ${{ secrets.SLIDES_PUBLISHING_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
       - name: Install ezslides
         run: pip install ./ezslides
       - name: Package files
-        run: ezslides -o slides/${{ secrets.PREVIEW }} content/content.md  # TODO: update file name here and remove PREVIEW when ready to go public
+        run: ezslides -o slides/${{ secrets.PREVIEW }} content/workshop.md  # TODO: update file name here and remove PREVIEW when ready to go public
 
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5.0.0
