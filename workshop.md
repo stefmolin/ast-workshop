@@ -661,3 +661,144 @@ Greeter
 __init__
 greet
 </code></pre>
+
+---
+
+The `ast.walk()` function yields the nodes in no specific order, so we don't have context beyond the node itself. In the case of the previous exercise, larger files can easily make the results confusing. Furthermore, we may want to flag missing docstrings on the `__init__()` method only if the class doesn't have one. For these use cases, we need the context provided by traversing the tree in a specific order.
+
+---
+
+### Depth-first traversal
+
+The `ast` module provides two classes that for depth-first traversal of an AST:
+
+<ul>
+    <li class="fragment"><code>ast.NodeVisitor</code>: visits nodes in an AST</li>
+    <li class="fragment"><code>ast.NodeTransformer</code>: special version of the above that can also modify nodes</li>
+</ul>
+
+---
+
+Suppose we want to check our code for the `try`/`except`/`pass` anti-pattern like the following code from `try_except.py`:
+
+```python
+def strip_password(x: dict[str, str]) -> None:
+    try:
+        del x['password']
+    except KeyError:
+        pass
+```
+
+<div class="fragment">
+
+<p>Instead, we want to encourage the use of <code>contextlib.suppress()</code>:</p>
+
+```python
+import contextlib
+
+def strip_password(x: dict[str, str]) -> None:
+    with contextlib.suppress(KeyError):
+        del x['password']
+```
+
+</div>
+
+---
+
+#### `ast.NodeVisitor`
+
+When we subclass `ast.NodeVisitor`, we create `visit_<NodeType>()` methods for each AST node we want to visit and the `ast.NodeVisitor` will take care of calling them as nodes of that type are encountered.
+
+---
+
+We need to visit each `ast.Try` node and inspect its `handlers` &ndash; if there is only one handler and its `body` is an `ast.Pass` node then we will report it:
+
+```python
+class TryExceptVisitor(ast.NodeVisitor):
+
+    def visit_Try(self, node):
+        if (
+            len(node.handlers) == 1
+            and isinstance(node.handlers[0].body[-1], ast.Pass)
+        ):
+            print(
+                'try/except/pass block on line',
+                f'{node.lineno}, use contextlib.suppress',
+            )
+```
+
+---
+
+To use our visitor, we instantiate it and call its `visit()` method, passing in the AST, to start the traversal:
+
+```pycon [highlight-lines="1-5|3|4|5"][class="hide-line-numbers"]
+>>> source_code = Path('snippets/try_except.py').read_text()
+>>> tree = ast.parse(source_code)
+>>> visitor = TryExceptVisitor()
+>>> visitor.visit(tree)
+try/except/pass block on line 3, use contextlib.suppress
+```
+
+---
+
+We aren't done yet though. The `visit_Try()` method is currently cutting off the traversal to descendants of `ast.Try` nodes, meaning our visitor never visits nested `try` blocks (only the outermost one). Consider this example of nested `try` blocks from `try_except_nested.py`, where we want to detect the anti-pattern in the inner `try`:
+
+```python [highlight-lines="1-9|4-7"][class="hide-line-numbers"]
+def strip_password(x: dict[str, str]) -> None:
+    try:
+        print(f'Received dict with keys: {x.keys()}')
+        try:
+            del x['password']
+        except KeyError:
+            pass
+    except Exception as e:
+        raise TypeError('Invalid input, expected dict') from e
+```
+
+---
+
+The `TryExceptVisitor` doesn't find anything with this input because it doesn't go any deeper after it visits the outermost `try`:
+
+```pycon
+>>> source_code = Path('snippets/try_except_nested.py')
+>>> tree = ast.parse(source_code.read_text())
+>>> visitor = TryExceptVisitor()
+>>> visitor.visit(tree)
+```
+
+---
+
+##### The `generic_visit()` method
+
+When we don't define a dedicated `visit_<NodeType>()` method for an AST node, the `ast.NodeVisitor` calls the `generic_visit()` method, which continues the traversal. The `visit_Try()` method we defined does not currently call `generic_visit()` on that node, so the traversal does not go any deeper.
+
+---
+
+We need to call `generic_visit()` ourselves. Note the indentation level &ndash; it is outside of the `if` because we want to visit all nodes, regardless of whether their ancestors had the issue we are looking for:
+
+```python [highlight-lines="12"][class="hide-line-numbers"]
+class TryExceptVisitor(ast.NodeVisitor):
+
+    def visit_Try(self, node):
+        if (
+            len(node.handlers) == 1
+            and isinstance(node.handlers[0].body[-1], ast.Pass)
+        ):
+            print(
+                'try/except/pass block on line',
+                f'{node.lineno}, use contextlib.suppress',
+            )
+        self.generic_visit(node)
+```
+
+---
+
+The `TryExceptVisitor` now visits the innermost `try` and detects the issue:
+
+```pycon [highlight-lines="5"][class="hide-line-numbers"]
+>>> source_code = Path('snippets/try_except_nested.py')
+>>> tree = ast.parse(source_code.read_text())
+>>> visitor = TryExceptVisitor()
+>>> visitor.visit(tree)
+try/except/pass block on line 5, use contextlib.suppress
+```
