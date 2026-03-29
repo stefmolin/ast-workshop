@@ -194,85 +194,12 @@ If the code is syntactically-correct, we get an AST back:
 
 ---
 
-[id=exercise-1-1]
-## Exercise
-
-Try passing source code that has a `SyntaxError` into `ast.parse()`. What happens? What about if the code has a non-syntax error?
-
----
-
-[id=example-solution-1-1]
-## Example solution
-
-<div class="fragment">
-
-### Syntactically-incorrect source code
-
-Let's use the following malformed `import` statement as an example of **invalid source code**:
-
-```pycon
->>> import timedelta from datetime
-  File "<stdin>", line 1
-    import timedelta from datetime
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-SyntaxError: Did you mean to use 'from ... import ...' instead?
-```
-
----
-
-We also encounter a `SyntaxError` when attempting to parse this into an AST:
-
-```pycon [highlight-lines="1-2,14"][class="hide-line-numbers"]
->>> import ast
->>> tree = ast.parse('import timedelta from datetime')
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-    ast.parse('import timedelta from datetime')
-    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File ".../ast.py", line 46, in parse
-    return compile(source, filename, mode, flags,
-                   _feature_version=feature_version,
-                   optimize=optimize)
-  File "<unknown>", line 1
-    ast.parse('import timedelta from datetime')
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-SyntaxError: Did you mean to use 'from ... import ...' instead?
-```
-
----
-
-### Syntactically-correct source code with logic errors
-
-The following code raises a `NameError` at runtime:
-
-```pycon
->>> a + 5
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-    a + 5
-    ^
-NameError: name 'a' is not defined
-```
-
-<div class="fragment">
-
-<p>However, it is syntactically-correct, so we can parse it into an AST:<p>
-
-```pycon
->>> ast.parse('a + 5')
-Module(body=[Expr(value=BinOp(...))], type_ignores=[])
-```
-
-</div>
-
----
-
 [id=inspecting-the-ast]
 ### Inspecting the AST
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    Use <code>ast.dump()</code> to display the AST:
+    We can use the <code>ast.dump()</code> function to display the AST:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     The root node is an <code>ast.Module</code> node:
@@ -363,24 +290,250 @@ Module(
 
 ---
 
-[id=exercise-1-2]
-## Exercise
+[id=exercise-1-1]
+### Exercise
 
-The AST is a abstract representation of the source code's logic created by the parser as an intermediary step when [compiling source code into byte code](https://github.com/python/cpython/blob/main/InternalDocs/compiler.md) (necessary to run it). Non-code elements like comments and formatting don't make it to the AST, so while we can use `ast.unparse()` to convert an AST into source code, it will not identical to the starting code. Create a code snippet with comments and custom formatting/styling and try to round-trip it. What differences do you notice?
+Try passing source code that has a `SyntaxError` into `ast.parse()`. What happens? What about if the code has an error unrelated to syntax, like a `NameError` or `TypeError`?
 
-```pycon [highlight-lines="4"][class="hide-line-numbers"]
->>> import ast
->>> source_code = 'TODO'
->>> tree = ast.parse(source_code)
->>> print(ast.unparse(tree))
+---
+
+[id=example-solution-1-1]
+### Example solution
+
+#### Syntactically-incorrect source code
+
+Let's use the following malformed `import` statement as an example of **invalid source code**:
+
+```pycon
+>>> import timedelta from datetime
+  File "<stdin>", line 1
+    import timedelta from datetime
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: Did you mean to use 'from ... import ...' instead?
 ```
 
 ---
 
-[id=example-solution-1-2]
-## Example solution
+We also encounter a `SyntaxError` when attempting to parse this into an AST:
 
-Consider the following source code (stored as a string in a variable called `source_code`):
+```pycon [highlight-lines="1-2,14"][class="hide-line-numbers"]
+>>> import ast
+>>> tree = ast.parse('import timedelta from datetime')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+    ast.parse('import timedelta from datetime')
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File ".../ast.py", line 46, in parse
+    return compile(source, filename, mode, flags,
+                   _feature_version=feature_version,
+                   optimize=optimize)
+  File "<unknown>", line 1
+    ast.parse('import timedelta from datetime')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: Did you mean to use 'from ... import ...' instead?
+```
+
+---
+
+#### Syntactically-correct source code with logic errors
+
+The following code raises a `NameError` at runtime:
+
+```pycon
+>>> a + 5
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+    a + 5
+    ^
+NameError: name 'a' is not defined
+```
+
+<div class="fragment">
+
+<p>However, it is syntactically-correct, so we can parse it into an AST:<p>
+
+```pycon
+>>> ast.parse('a + 5')
+Module(body=[Expr(value=BinOp(...))], type_ignores=[])
+```
+
+</div>
+
+---
+
+## Working with ASTs
+
+In addition to being a highly-nested structure, attributes containing nodes may be named differently across node types. To see this, let's take a look at the AST for the following snippet in `assert.py`:
+
+```python
+def duplicate_list(x):
+    assert isinstance(x, list)
+    return x + x
+```
+
+---
+
+[data-transition=slide-out fade-in]
+<div class="center">
+  <img width="450" src="media/assert-ast-attributes.svg" alt="The AST for assert.py visualized with Graphviz" data-preview-image>
+  <br/>
+  <small>The AST for <code>assert.py</code> with node attributes visualized with Graphviz.</small>
+</div>
+
+---
+
+### Traversing the AST
+
+To effectively analyze code using the AST, we need to traverse it and inspect the nodes we care about. Depending on how much of the tree we want to explore and how much context we need about each node, there are different approaches. Let's walk through the different ways using the `assert.py` example:
+
+```python
+import ast
+from pathlib import Path
+
+source_code = Path('snippets/assert.py').read_text()
+tree = ast.parse(source_code)
+```
+
+---
+
+#### `ast.iter_fields()`
+
+We can use the `ast.iter_fields()` function to iterate over all fields that a node has. Our AST is rooted at an `ast.Module` node, so there isn't much here:
+
+```pycon
+>>> print(list(ast.iter_fields(tree)))
+[('body', [<ast.FunctionDef at 0x1086bea10>]),
+ ('type_ignores', [])]
+```
+
+---
+
+If we look at this for the `ast.FunctionDef` in the `body` of the `ast.Module`, we have more information:
+
+```pycon
+>>> func_def = tree.body[0]
+>>> print(list(ast.iter_fields(func_def)))
+[('name', 'duplicate_list'),
+ ('args', <ast.arguments at 0x1085794e0>),
+ ('body', [<ast.Assert at 0x10884d6c0>,
+           <ast.Return at 0x10884d9f0>]),
+ ('decorator_list', []),
+ ('returns', None),
+ ('type_comment', None)]
+```
+
+---
+
+#### `ast.iter_child_nodes()`
+
+The `ast.iter_fields()` function is helpful when figuring out how to work with individual node types. The `ast.iter_child_nodes()` builds on top of this to traverse the tree starting at a given node. It yields all nodes it encounters along the way that are direct children of the starting node (they can be in any field, but they cannot be grandchildren, like the children of the `ast.Assert` node below):
+
+```pycon
+>>> print(list(ast.iter_child_nodes(func_def)))
+[<ast.arguments at 0x1085794e0>,
+ <ast.Assert at 0x10884d6c0>,
+ <ast.Return at 0x10884d9f0>]
+```
+
+---
+
+To traverse the entire tree, we need the recursive behavior provided in the `ast.walk()` function or the `ast.NodeVisitor`/`ast.NodeTransformer` classes. Each of these builds upon the `ast.iter_fields()` and `ast.iter_child_nodes()` functions we just looked at. Let's start with the `ast.walk()` function
+
+---
+
+#### `ast.walk()`
+
+The `ast.walk()` function recursively yields all descendant nodes in the AST. Let's use it to make sure all `assert` calls provide a message when the `assert` is false and an `AssertionError` is raised. For those unfamiliar with the syntax, here's a comparison using the contents of `assert.py`:
+
+```python
+# without custom message
+def duplicate_list(x):
+    assert isinstance(x, list)
+    return x + x
+
+# with custom message
+def duplicate_list(x):
+    assert isinstance(x, list), 'Input is not a list'
+    return x + x
+```
+
+---
+
+##### Modifying code before running it with `ast.walk()`
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    The <code>ast.walk()</code> function yields all nodes descending from <code>tree</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    We want to modify all <code>ast.Assert</code> nodes that do not have a message (<code>msg</code>):
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We set the <code>msg</code> to a placeholder value, so it's easy to find in the logs:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    All nodes to must have line numbers in order to compile the AST into a <code>code</code> object:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    The <code>compile()</code> function turns our modified AST into a <code>code</code> object:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    We can execute <code>code</code> objects with the <code>exec()</code> function:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    This runs the function definition for <code>duplicate_list()</code>, so we can now call it:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    The input we passed fails the <code>assert</code>, raising an <code>AssertionError</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
+    Notice that we get the message we injected when we modified the AST:
+  </p>
+</div>
+
+<pre>
+    <code data-trim class="language-pycon hide-line-numbers" data-line-numbers="1|2|3|4|6|7|8|9-14|3,14" data-fragment-index="0">
+>>> for node in ast.walk(tree):
+...     if isinstance(node, ast.Assert) and not node.msg:
+...         node.msg = ast.Constant('TODO: Add failure info')
+...         ast.fix_missing_locations(node)
+>>>
+>>> code = compile(tree, '&lt;ast_workshop&gt;', 'exec')
+>>> exec(code)
+>>> duplicate_list(1)
+Traceback (most recent call last):
+  File "&lt;stdin&gt;", line 1, in &lt;module&gt;
+    duplicate_list(1)
+    ~~~~~~~~~~~~~~^^^
+  File "&lt;ast_workshop&gt;", line 3, in duplicate_list
+AssertionError: TODO: Add failure info
+</code></pre>
+
+---
+
+##### Can we convert this back into source code to save it?
+
+With a small example like this, we can also use the `ast.unparse()` function to convert the modified AST back into Python source code:
+
+```pycon [highlight-lines="1|2-4|3"][class="hide-line-numbers"]
+>>> print(ast.unparse(tree))
+def duplicate_list(x):
+    assert isinstance(x, list), 'TODO: Add failure info'
+    return x + x
+```
+
+---
+
+The `ast.unparse()` function comes with some caveats:
+
+<ul>
+    <li class="fragment">It's not recommended with larger trees since it can hit recursion limits.</li>
+    <li class="fragment">If we first convert source code to an AST, and then attempt to convert it back without an changes, the result will be <em>equivalent, but not necessarily equal</em> to the original.</li>
+</ul>
+
+---
+
+One way that the round-trip could result in equivalent, but different source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they don't they have no effect on the logic of the program. For example, if we try to round-trip this code:
 
 ```python
 import contextlib
@@ -400,12 +553,9 @@ def strip_password(
 
 ---
 
-When we parse this into an AST and back to source code, several things have changed:
+When we parse this into an AST and back again, the code is equivalent, but different:
 
-```pycon [highlight-lines="1-3|4-12"][class="hide-line-numbers"]
->>> import ast
->>> tree = ast.parse(source_code)
->>> print(ast.unparse(tree))
+```python
 import contextlib
 
 def strip_password(credentials: dict[str, str]) -> None:
@@ -463,3 +613,51 @@ def strip_password(credentials: dict[str, str]) -> None:
     </code>
 </pre>
 </div>
+
+---
+
+[id=exercise-1-2]
+### Exercise
+
+Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse the AST for `greet.py` and report any items that are missing docstrings.
+
+---
+
+[id=example-solution-1-2]
+### Example solution
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Similar setup to the previous examples, except we also import <code>contextlib</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    Multiple node types can have docstrings, so we don't limit to a type here:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We try to access each node's docstring and <code>suppress</code> any <code>TypeErrors</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    If there isn't a docstring, we report it along with the node's name:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    The module, <code>Greeter</code> class, and the <code>Greeter</code> class's methods lack docstrings:
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-3,5|6-9|2,7|8-9|10-13" data-fragment-index="0">
+>>> import ast
+>>> import contextlib
+>>> from pathlib import Path
+>>>
+>>> tree = ast.parse(Path('snippets/greet.py').read_text())
+>>> for node in ast.walk(tree):
+...    with contextlib.suppress(TypeError):
+...        if not ast.get_docstring(node):
+...            print(getattr(node, 'name', 'module'))
+module
+Greeter
+__init__
+greet
+</code></pre>
