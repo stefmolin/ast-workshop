@@ -820,3 +820,19 @@ try/except/pass block on line 5, use contextlib.suppress
   <br/>
   <small>Full AST traversal of <code>try_except_nested.py</code> visualized with Graphviz.</small>
 </div>
+
+---
+
+[id=exercise-3]
+### Exercise
+
+Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptionHandler` nodes. You can test it using the source code in `generic_exception.py`:
+
+```python
+try:
+    del x['non_existent_key']
+except:  # bare except
+    raise Exception('No such key')  # generic Exception
+```
+
+**Bonus**: If you have time, use the `ast.get_source_segment()` function to print any problematic code you detect.
