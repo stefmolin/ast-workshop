@@ -290,14 +290,14 @@ Module(
 
 ---
 
-[id=exercise-1-1]
+[id=exercise-1]
 ### Exercise
 
 Try passing source code that has a `SyntaxError` into `ast.parse()`. What happens? What about if the code has an error unrelated to syntax, like a `NameError` or `TypeError`?
 
 ---
 
-[id=example-solution-1-1]
+[id=example-solution-1]
 ### Example solution
 
 #### Syntactically-incorrect source code
@@ -616,14 +616,14 @@ def strip_password(credentials: dict[str, str]) -> None:
 
 ---
 
-[id=exercise-1-2]
+[id=exercise-2]
 ### Exercise
 
 Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse the AST for `greet.py` and report any items that are missing docstrings.
 
 ---
 
-[id=example-solution-1-2]
+[id=example-solution-2]
 ### Example solution
 
 <div class="r-stack r-stack-left">
