@@ -106,6 +106,45 @@ class Greeter:
 
 ---
 
+### Popular open source tools that use ASTs
+
+<ul>
+  <li class="fragment fade-in">
+    Linters and formatters, like <code>ruff</code> (Rust) and <code>black</code> (Python)
+  </li>
+  <li class="fragment fade-in">
+    Documentation tools, like <code>sphinx</code> and the <code>numpydoc-validation</code> pre-commit hook
+  </li>
+  <li class="fragment fade-in">
+    Automatic Python syntax upgrade tools, like <code>pyupgrade</code>
+  </li>
+  <li class="fragment fade-in">
+    Next-generation notebooks, like <code>marimo</code>
+  </li>
+  <li class="fragment fade-in">
+    Type checkers, like <code>mypy</code>
+  </li>
+  <li class="fragment fade-in">
+    Code security tools, like <code>bandit</code>
+  </li>
+  <li class="fragment fade-in">
+    Code and testing coverage tools, like <code>vulture</code> and <code>coverage.py</code>
+  </li>
+  <li class="fragment fade-in">
+    Testing frameworks that instrument your code or generate tests based on it, like <code>hypothesis</code> and <code>pytest</code>
+  </li>
+</ul>
+
+[notes]
+Other potential use cases:
+
+- Metaprogramming
+- Updating syntax after upgrading dependency
+- Analyzing code structure
+- Forbidding certain imports or types of imports (like not allowing relative imports or `import *`)
+
+---
+
 [id=asts-in-python]
 ## ASTs in Python
 
