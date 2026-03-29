@@ -99,7 +99,7 @@ class Greeter:
 
 [data-transition=slide-out fade-in,id=greeter-snippet-ast]
 <div class="center">
-  <img width="650" src="media/full-ast.svg" alt="The AST for greet.py visualized with Graphviz" data-preview-image>
+  <img width="650" src="media/full-ast.svg" alt="The AST for greet.py visualized with Graphviz">
   <br/>
   <small>The AST for <code>greet.py</code> visualized with Graphviz.</small>
 </div>
@@ -375,7 +375,7 @@ def duplicate_list(x):
 
 [data-transition=slide-out fade-in]
 <div class="center">
-  <img width="450" src="media/assert-ast-attributes.svg" alt="The AST for assert.py visualized with Graphviz" data-preview-image>
+  <img width="450" src="media/assert-ast-attributes.svg" alt="The AST for assert.py visualized with Graphviz">
   <br/>
   <small>The AST for <code>assert.py</code> with node attributes visualized with Graphviz.</small>
 </div>
@@ -768,6 +768,15 @@ The `TryExceptVisitor` doesn't find anything with this input because it doesn't 
 
 ---
 
+[data-transition=slide-out fade-in]
+<div class="center">
+  <img width="300" src="media/animation-try-except-nested-blocked.gif" alt="Partial AST traversal of try_except_nested.py with the initial TryExceptVisitor visualized with Graphviz">
+  <br/>
+  <small>Partial AST traversal of <code>try_except_nested.py</code> with the initial <code>TryExceptVisitor</code> visualized with Graphviz.</small>
+</div>
+
+---
+
 ##### The `generic_visit()` method
 
 When we don't define a dedicated `visit_<NodeType>()` method for an AST node, the `ast.NodeVisitor` calls the `generic_visit()` method, which continues the traversal. The `visit_Try()` method we defined does not currently call `generic_visit()` on that node, so the traversal does not go any deeper.
@@ -802,3 +811,12 @@ The `TryExceptVisitor` now visits the innermost `try` and detects the issue:
 >>> visitor.visit(tree)
 try/except/pass block on line 5, use contextlib.suppress
 ```
+
+---
+
+[data-transition=slide-out fade-in]
+<div class="center">
+  <img width="700" src="media/animation-try-except-nested-full.gif" alt="Full AST traversal of try_except_nested.py visualized with Graphviz">
+  <br/>
+  <small>Full AST traversal of <code>try_except_nested.py</code> visualized with Graphviz.</small>
+</div>
