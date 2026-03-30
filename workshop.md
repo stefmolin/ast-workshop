@@ -836,3 +836,86 @@ except:  # bare except
 ```
 
 **Bonus**: If you have time, use the `ast.get_source_segment()` function to print any problematic code you detect.
+
+---
+
+[id=example-solution-3]
+### Example solution
+
+```python
+import ast
+from textwrap import dedent, indent
+
+class GenericExceptionVisitor(ast.NodeVisitor):
+
+    def __init__(self, source_code):
+        self.source_code = source_code
+        self.tree = ast.parse(source_code)
+
+    def _print_source_segment(self, node):
+        code_segment = ast.get_source_segment(
+            self.source_code, node, padded=True
+        )
+        print(indent(dedent(code_segment), '| '), end='\n\n')
+
+    def visit_Raise(self, node):
+        if (
+            (
+                isinstance(node.exc, ast.Name)
+                and node.exc.id == 'Exception'
+            )
+            or (
+                isinstance(node.exc, ast.Call)
+                and node.exc.func.id == 'Exception'
+            )
+        ):
+            print(
+                'Generic Exception raised on line',
+                f'{node.lineno}:'
+            )
+            self._print_source_segment(node)
+
+        self.generic_visit(node)
+
+    def visit_ExceptHandler(self, node):
+        if not (exception_type := node.type):
+            print(f'Bare except on line {node.lineno}:')
+            self._print_source_segment(node)
+
+        elif exception_type.id == 'Exception':
+            print(f'Generic Exception on line {node.lineno}:')
+            self._print_source_segment(node)
+
+        self.generic_visit(node)
+
+    def run(self):
+        self.visit(self.tree)
+```
+
+---
+
+```pycon [highlight-lines="1-5|6-23"][class="hide-line-numbers"]
+>>> source_code = Path('snippets/generic_exception.py')
+>>> visitor = GenericExceptionVisitor(
+...     source_code.read_text()
+... )
+>>> visitor.run()
+Bare except on line 5:
+| except:
+|     pass
+
+Generic Exception on line 11:
+| except Exception:
+|     pass
+
+Generic Exception raised on line 16:
+| raise Exception('Improper input format')
+
+Generic Exception raised on line 20:
+| raise Exception
+
+Bare except on line 25:
+| except:
+|     print('Shame on you!')
+|     raise
+```
