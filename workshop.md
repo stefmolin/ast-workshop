@@ -1174,7 +1174,7 @@ Up until this point, we were only concerned with a node and its immediate childr
     We use <code>getattr()</code> here because this is only for <code>ast.ImportFrom</code> nodes:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="8">
-    After processing the entire node, we have a list of imports, which add to <code>imports_available</code>:
+    We add this list of imports extracted from the node to <code>imports_available</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="9">
     As we have seen before, we call <code>generic_visit()</code> to continue the traversal:
@@ -1222,7 +1222,7 @@ class ImportVisitor(ast.NodeVisitor):
 
 ---
 
-Let's try this out on the `import_1.py` snippet, which has one import of each case we need to handle. Notice we have module-level imports and imports inside functions:
+Let's try this out on the `imports.py` snippet, which has one import of each case we need to handle. Notice we have module-level imports and imports inside functions:
 
 ```python [highlight-lines="1-17|1|2|15"][class="hide-line-numbers"]
 import json
@@ -1250,11 +1250,123 @@ Our `ImportVisitor` finds each of the imports:
 
 ```pycon [highlight-lines="1-8|1-2|3-4|5|6-8"][class="hide-line-numbers"]
 >>> from pathlib import Path
->>> source_code = Path('snippets/import_1.py').read_text()
+>>> source_code = Path('snippets/imports.py').read_text()
 >>> visitor = ImportVisitor(source_code)
 >>> visitor.run()
 >>> print(visitor.imports_available)
 [{'import': 'json', 'from': None, 'alias': None},
  {'import': 'suppress', 'from': 'contextlib', 'alias': None},
  {'import': 'pandas', 'from': None, 'alias': 'pd'}]
+```
+
+---
+
+### Tracking import scope
+
+In order to flag missing imports and unused imports, we need to know, which imports are available to us. However, right now, we don't have the full story &ndash; we need to account for their scope. For example, the import of `json` on line 2, is only available with the scope of the `get_data()` function, which is narrower than the module scope, in which we call `json.dump()` on line 8:
+
+```python [highlight-lines="1-8"]
+def get_data():
+    import json
+    return json.loads('{"key": "value"}')
+
+data = get_data()
+
+# this results in a NameError
+json.dump(data, 'data.json')
+```
+
+---
+
+#### Using a stack to track scope
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Let's update our <code>ImportVisitor</code> to track import scope:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    Our <code>__init__()</code> method now initializes a stack for tracking the ancestry:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    Each time we visit an import node, we will now record the scope:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    A node's scope is the path from it to the root of the tree:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    We will override <code>generic_visit()</code> to keep the stack up-to-date:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    Each time we visit a node that has a <code>body</code> attribute, our scope changes:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    We call the superclass's <code>generic_visit()</code> method to continue the traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    Afterward, we remove the node from the stack (remember this is depth first):
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-41|5,9|11-25|12,16|33-38|34-35|36|37-38" data-fragment-index="0">
+import ast
+
+
+class ImportVisitor(ast.NodeVisitor):
+    def __init__(self, source_code):
+        self.source_code = source_code
+        self.tree = ast.parse(source_code)
+        self.imports_available = []
+        self.stack = []
+
+    def _visit_import(self, node):
+        import_scope = '.'.join(self.stack)
+        self.imports_available.extend(
+            [
+                {
+                    'scope': import_scope,
+                    'import': alias.name,
+                    'from': getattr(node, 'module', None),
+                    'alias': alias.asname,
+                }
+                for alias in node.names
+                if alias.name != '*'
+            ]
+        )
+        self.generic_visit(node)
+
+    def visit_Import(self, node):
+        self._visit_import(node)
+
+    def visit_ImportFrom(self, node):
+        self._visit_import(node)
+
+    def generic_visit(self, node):
+        if hasattr(node, 'body'):
+            self.stack.append(getattr(node, 'name', 'module'))
+        super().generic_visit(node)
+        if hasattr(node, 'body'):
+            self.stack.pop()
+
+    def run(self):
+        self.visit(self.tree)
+</code></pre>
+
+---
+
+Now the `ImportVisitor` includes the scope in which each of the imports can be used, and we are one step closer to detecting missing and unused imports:
+
+```pycon [highlight-lines="6-11|6,8,10"][class="hide-line-numbers"]
+>>> from pathlib import Path
+>>> source_code = Path('snippets/imports.py').read_text()
+>>> visitor = ImportVisitor(source_code)
+>>> visitor.run()
+>>> print(visitor.imports_available)
+[{'scope': 'module',
+  'import': 'json', 'from': None, 'alias': None},
+ {'scope': 'module',
+  'import': 'suppress', 'from': 'contextlib', 'alias': None},
+ {'scope': 'module.analyze_something',
+  'import': 'pandas', 'from': None, 'alias': 'pd'}]
 ```
