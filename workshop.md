@@ -1012,7 +1012,6 @@ def strip_password(x: dict[str, str]) -> None:
 
 ---
 
-
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
     Once again, we will use the <code>ast</code> module along with <code>textwrap</code>:
@@ -1133,3 +1132,129 @@ def strip_password(x: dict[str, str]) -> None:
 ```
 
 <p class="fragment"><em>Note that, in order to simplify the code, we didn't check if there was already an import of <code>contextlib</code> or even the <code>suppress()</code> function, but you could do that as well.</em><p>
+
+---
+
+## Managing context when traversing ASTs
+
+Up until this point, we were only concerned with a node and its immediate children, but sometimes we need to understand a node's ancestry (*i.e.*, parents, grandparents, *etc.*), which, since nodes don't hold references to their parents, is not possible without some extra accounting on our end. On such case is taking into account what is in scope (variables, imports, *etc.*) when processing nodes.
+
+<p class="fragment">In this section, we see how to track this information to find missing and unused imports.</p>
+
+---
+
+### Finding all imports
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Let's start by finding all the imports in a module with a new <code>ImportVisitor</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    We start by importing <code>ast</code> and inheriting from <code>ast.NodeVisitor</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We will track imports in the <code>imports_available</code> list:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    We will be visiting both <code>ast.Import</code> and <code>ast.ImportFrom</code> nodes:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    In both cases, we will track the import in the same way, so we add a helper method:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    Each <code>import</code> statement can import multiple names, so we loop over them:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    We will ignore any <code>from x import *</code> imports as a simplification:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    For each named import, we track its name and alias (if any), along with its module:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
+    We use <code>getattr()</code> here because this is only for <code>ast.ImportFrom</code> nodes:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="8">
+    After processing the entire node, we have a list of imports, which add to <code>imports_available</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="9">
+    As we have seen before, we call <code>generic_visit()</code> to continue the traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="10">
+    Last, we have the initial version of our <code>run()</code> method, which just calls <code>visit()</code>:
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-31|1-4|5-8|24-28|10-22|18|19|13-17|15|11-21|22|30-31" data-fragment-index="0">
+import ast
+
+
+class ImportVisitor(ast.NodeVisitor):
+    def __init__(self, source_code):
+        self.source_code = source_code
+        self.tree = ast.parse(source_code)
+        self.imports_available = []
+
+    def _visit_import(self, node):
+        self.imports_available.extend(
+            [
+                {
+                    'import': alias.name,
+                    'from': getattr(node, 'module', None),
+                    'alias': alias.asname,
+                }
+                for alias in node.names
+                if alias.name != '*'
+            ]
+        )
+        self.generic_visit(node)
+
+    def visit_Import(self, node):
+        self._visit_import(node)
+
+    def visit_ImportFrom(self, node):
+        self._visit_import(node)
+
+    def run(self):
+        self.visit(self.tree)
+</code></pre>
+
+---
+
+Let's try this out on the `import_1.py` snippet, which has one import of each case we need to handle. Notice we have module-level imports and imports inside functions:
+
+```python [highlight-lines="1-17|1|2|15"][class="hide-line-numbers"]
+import json
+from contextlib import suppress
+
+
+def strip_password(x):
+    with suppress(KeyError):
+        del x['password']
+
+
+def dump_info(x, out):
+    json.dump(strip_password(x), out)
+
+
+def analyze_something(x):
+    import pandas as pd
+
+    df = pd.DataFrame(x)
+```
+
+---
+
+Our `ImportVisitor` finds each of the imports:
+
+```pycon [highlight-lines="1-8|1-2|3-4|5|6-8"][class="hide-line-numbers"]
+>>> from pathlib import Path
+>>> source_code = Path('snippets/import_1.py').read_text()
+>>> visitor = ImportVisitor(source_code)
+>>> visitor.run()
+>>> print(visitor.imports_available)
+[{'import': 'json', 'from': None, 'alias': None},
+ {'import': 'suppress', 'from': 'contextlib', 'alias': None},
+ {'import': 'pandas', 'from': None, 'alias': 'pd'}]
+```
