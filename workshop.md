@@ -842,9 +842,61 @@ except:  # bare except
 [id=example-solution-3]
 ### Example solution
 
-```python
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    In addition to <code>ast</code>, we will also use <code>textwrap</code> for text formatting:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    We start by inheriting from <code>ast.NodeVisitor</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    In order to use <code>ast.get_source_segment()</code>, we need the source code string:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    <code>_print_source_segment()</code> will print the source code we reference:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    <code>ast.get_source_segment()</code> needs the full source code and the AST node:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    <code>visit_Raise()</code> defines our actions when we encounter <code>ast.Raise</code> nodes:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    Here, we look for <code>raise Exception</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    or <code>raise Exception(...)</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
+    If either is true, we print the issue, line number, and the code itself for reference:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="8">
+    Regardless of whether we found something, we make sure to continue the traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="9">
+    We also need to visit <code>ast.ExceptHandler</code> nodes:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="10">
+    With a bare <code>except</code>, there is no exception type provided in <code>node.type</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="11">
+    With a generic exception, the exception type provided is <code>Exception</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="12">
+    Again, regardless of whether we found something, we continue the traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="13">
+    We generated the AST in <code>__init__()</code>, so we create <code>run()</code> to call <code>visit()</code>:
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|7-9|11-15|12-14|17-34|19-22|23-26|28-32|34|36-45|37-39|41-43|45|47-48" data-fragment-index="0">
 import ast
 from textwrap import dedent, indent
+
 
 class GenericExceptionVisitor(ast.NodeVisitor):
 
@@ -890,9 +942,11 @@ class GenericExceptionVisitor(ast.NodeVisitor):
 
     def run(self):
         self.visit(self.tree)
-```
+</code></pre>
 
 ---
+
+Using the `GenericExceptionVisitor` is a little different. This time, we pass in the source code when we initialize it, and we call the `run()` method to kick off the traversal:
 
 ```pycon [highlight-lines="1-5|6-23"][class="hide-line-numbers"]
 >>> source_code = Path('snippets/generic_exception.py')
