@@ -973,3 +973,165 @@ Bare except on line 25:
 |     print('Shame on you!')
 |     raise
 ```
+
+---
+
+#### `ast.NodeTransformer`
+
+The `ast.NodeTransformer` performs the traversal in the same way that the `ast.NodeVisitor` does, but it can modify the AST. So far, each of our `visit_*()` methods haven't returned anything (implicit return of `None`). However, with the `ast.NodeTransformer`, the return value modifies the AST:
+
+- Returning `None` deletes the subtree rooted at that node (*i.e.*, that node and all of its descendants)
+- Returning `transformed_node` replaces the subtree rooted at the visited node with `transformed_node` (or keeps it if it wasn't modified)
+
+---
+
+Circling back to our `try`/`except`/`pass` detector, we can create a `ast.NodeTransformer` to rewrite that code to use `contextlib.suppress()` instead of just suggesting it:
+
+<div class="fragment semi-fade-out" data-fragment-index="0">
+
+```python
+def strip_password(x: dict[str, str]) -> None:
+    try:
+        del x['password']
+    except KeyError:
+        pass
+```
+
+</div>
+
+<div class="fragment fade-in-then-semi-out" data-fragment-index="0">
+
+```python
+import contextlib
+
+def strip_password(x: dict[str, str]) -> None:
+    with contextlib.suppress(KeyError):
+        del x['password']
+```
+
+</div>
+
+---
+
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Once again, we will use the <code>ast</code> module along with <code>textwrap</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    We start by inheriting from <code>ast.NodeTransformer</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    Here <code>has_changed</code> indicates whether we need to add an import for <code>contextlib</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    <code>_get_suppress_block()</code> will take a <code>ast.Try</code> node and convert it:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    Rather than write the AST directly, we will write source code, parse it, then edit it:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    We <code>suppress()</code> the type of exception that was in the <code>except</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    The body of the <code>with</code> block will be the code that was in the body of the <code>try</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    Finally, we return this new node so that we can update the AST:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
+    The <code>ast.NodeTransformer</code> will call our <code>visit_Try()</code> method during traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="8">
+    If it finds a <code>try</code> block to rewrite, it will report it and start the AST update:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="9">
+    We track the change and call <code>_get_suppress_block()</code> to get the new node:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="10">
+    We still need to traverse the tree further in case there are any nested blocks:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="11">
+    By returning the new node, the <code>try</code> block is replaced by the new <code>with</code> block:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="12">
+    Again, we create a <code>run()</code> method as the entrypoint:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="13">
+    We start by calling <code>visit()</code> to traverse the entire AST:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="14">
+    If any edits were made, we will add <code>import contextlib</code> to the top of the module:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="15">
+    We return the modified AST with all the location information required to compile:
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|7-9|11-21|11-16|17-19|20|21|23-35|24-33|32-33|34|35|37-44|38|39-43|44" data-fragment-index="0">
+import ast
+from textwrap import dedent
+
+
+class TryExceptTransformer(ast.NodeTransformer):
+
+    def __init__(self, source_code):
+        self.tree = ast.parse(source_code)
+        self.has_changed = False
+
+    def _get_suppress_block(self, node):
+        suppress_example = dedent("""
+        with contextlib.suppress(KeyError):
+            del x['password']
+        """)
+        with_block = ast.parse(suppress_example).body[0]
+        with_block.items[0].context_expr.args = [
+            node.handlers[0].type or ast.Name('Exception')
+        ]
+        with_block.body = node.body
+        return with_block
+
+    def visit_Try(self, node):
+        if (
+            len(node.handlers) == 1
+            and isinstance(node.handlers[0].body[-1], ast.Pass)
+        ):
+            print(
+                'Detected a try/except/pass block on',
+                f'line {node.lineno}, rewriting'
+            )
+            self.has_changed = True
+            node = self._get_suppress_block(node)
+        self.generic_visit(node)
+        return node
+
+    def run(self):
+        result = self.visit(self.tree)
+        if self.has_changed:
+            self.tree.body = (
+                [ast.Import([ast.alias('contextlib')])]
+                + self.tree.body
+            )
+        return ast.fix_missing_locations(result)
+</code></pre>
+
+---
+
+
+We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, like the loss of comments and formatting:
+
+```pycon [highlight-lines="1-3|4|5-9"][class="hide-line-numbers"]
+>>> source_code = Path('snippets/try_except.py')
+>>> transformer = TryExceptTransformer(source_code)
+>>> updated_ast = transformer.run()
+>>> print(ast.unparse(updated_ast))
+import contextlib
+
+def strip_password(x: dict[str, str]) -> None:
+    with contextlib.suppress(KeyError):
+        del x['password']
+```
+
+<p class="fragment"><em>Note that, in order to simplify the code, we didn't check if there was already an import of <code>contextlib</code> or even the <code>suppress()</code> function, but you could do that as well.</em><p>
