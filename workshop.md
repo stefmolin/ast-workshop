@@ -893,13 +893,12 @@ except:  # bare except
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|7-9|11-15|12-14|17-34|19-22|23-26|28-32|34|36-45|37-39|41-43|45|47-48" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-14|11-13|16-33|18-21|22-25|27-31|33|35-44|36-38|40-42|44|46-47" data-fragment-index="0">
 import ast
 from textwrap import dedent, indent
 
 
 class GenericExceptionVisitor(ast.NodeVisitor):
-
     def __init__(self, source_code):
         self.source_code = source_code
         self.tree = ast.parse(source_code)
@@ -1070,13 +1069,12 @@ def strip_password(x: dict[str, str]) -> None:
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|7-9|11-21|11-16|17-19|20|21|23-35|24-33|32-33|34|35|37-44|38|39-43|44" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-20|10-15|16-18|19|20|22-34|23-32|31-32|33|34|36-43|37|38-42|43" data-fragment-index="0">
 import ast
 from textwrap import dedent
 
 
 class TryExceptTransformer(ast.NodeTransformer):
-
     def __init__(self, source_code):
         self.tree = ast.parse(source_code)
         self.has_changed = False
