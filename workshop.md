@@ -1416,3 +1416,218 @@ def get_in_scope_imports(self):
         if self._is_in_scope(import_info['scope'])
     ]
 ```
+
+---
+
+### Tracking name definitions
+
+As alluded to before, in order to see if an import is missing, we also need to track all the names used and the scopes in which they were defined. Imports, class definitions, function definitions, function arguments, and variable assignments are all names. Think about what happens if you try to run `ast.parse()` without first running `import ast` &ndash; you get a `NameError`:
+
+```pycon
+>>> ast.parse('x = 1')
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+    ast.parse('x=1')
+    ^^^
+NameError: name 'ast' is not defined. Did you forget to import 'ast'?
+```
+
+---
+
+We will use a `defaultdict` to track names, where the key is the name we find in the source code we are processing, and the value is a list of dictionaries that each contain the scope upon declaration, the type of name it is (*e.g.*, builtin, import, *etc.*), and the line number (if not a builtin):
+
+```python [highlight-lines="2,3|12-21"][class="hide-line-numbers"]
+import ast
+import builtins
+from collections import defaultdict
+
+
+class ImportVisitor(ast.NodeVisitor):
+    def __init__(self, source_code: str) -> None:
+        self.source_code = source_code
+        self.tree = ast.parse(source_code)
+        self.stack = []
+        self.imports_available = []
+        self.names_defined = defaultdict(list)
+
+        for builtin in builtins.__dict__.keys():
+            self.names_defined[builtin].append(
+                {
+                    'scope': 'module',
+                    'type': 'builtin',
+                    'line_number': None,
+                }
+            )
+    ...
+```
+
+---
+
+[id=exercise-5]
+### Exercise
+
+Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`).
+
+**Bonus**: If you have time, print out a warning whenever a name is redefined within a given scope, for example:
+
+```python
+# this masks the builtin dict()
+dict = {}
+```
+
+---
+
+[id=example-solution-5]
+### Example solution
+
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Let's update our <code>ImportVisitor</code> to track names and report name masking:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    The <code>_track_name_definition()</code> method updates <code>names_defined</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    And will make a call to <code>_flag_if_masked()</code> each time (we will come back to this):
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    We are already processing imports, but we need to track the names now:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    If the import was aliased, that will be the name, otherwise it is the import name:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    Here, we track names from variable assignments (note the <code>ast.Store</code> context):
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    Rather than writing several similar <code>visit_*()</code> methods, we override <code>visit()</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    This replaces the <code>visit_Import()</code> and <code>visit_ImportFrom()</code> methods:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
+    Here, we handle class and function declarations, as well as function arguments:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="8">
+    The only difference is how we extract the name itself:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="9">
+    For all other nodes, we preserve the superclass's behavior:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="10">
+    Now, coming back to to flagging masked names upon redefinition:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="11">
+    For it to be a redefinition, we need at least two occurrences of the name:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="12">
+    If there is indeed a redefinition, we store the latest one:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="13">
+    Every other definition that is in scope needs to be flagged as masked:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="14">
+    Builtins aren't explicitly defined so we don't have a line number:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="15">
+    Print the warning, <em>e.g.</em>, builtin dict is masked by Name of the same name on line 1:
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-92|30-38|38|40-58|54-57|60-63|73-91|74-75|76-89|85-87|90-91|9-28|10-11|13|15-28|18-22|23-28" data-fragment-index="0">
+import ast
+import builtins
+from collections import defaultdict
+
+
+class ImportVisitor(ast.NodeVisitor):
+    ...
+
+    def _flag_if_masked(self, name):
+        if len(definitions := self.names_defined[name]) < 2:
+            return
+
+        latest_def = definitions[-1]
+
+        # mark all others still in scope as masked
+        for older_def in definitions[:-1]:
+            if self._is_in_scope(older_def['scope']):
+                other_line_number = (
+                    f' on line {older_def["line_number"]}'
+                    if older_def['line_number'] is None
+                    else ''
+                )  # empty for builtins only
+                print(
+                    f'{older_def["type"]} {name}{older_line}',
+                    f'is masked by the {latest_def["type"]}',
+                    'of the same name',
+                    f'on line {latest_def["line_number"]}',
+                )
+
+    def _track_name_definition(self, node, name):
+        self.names_defined[name].append(
+            {
+                'scope': '.'.join(self.stack),
+                'type': node.__class__.__name__,
+                'line_number': node.lineno,
+            }
+        )
+        self._flag_if_masked(name)
+
+    def _visit_import(self, node):
+        import_scope = '.'.join(self.stack)
+        self.imports_available.extend(
+            [
+                {
+                    'scope': import_scope,
+                    'import': alias.name,
+                    'from': getattr(node, 'module', None),
+                    'alias': alias.asname,
+                }
+                for alias in node.names
+                if alias.name != '*'
+            ]
+        )
+        for alias in node.names:
+            self._track_name_definition(
+                node, alias.asname or alias.name
+            )
+        self.generic_visit(node)
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, ast.Store):
+            self._track_name_definition(node, node.id)
+        self.generic_visit(node)
+
+    def generic_visit(self, node):
+        if hasattr(node, 'body'):
+            # we have entered a new scope
+            self.stack.append(getattr(node, 'name', 'module'))
+        super().generic_visit(node)
+        if hasattr(node, 'body'):
+            self.stack.pop()
+
+    def visit(self, node):
+        if isinstance(node, ast.Import | ast.ImportFrom):
+            self._visit_import(node)
+        elif isinstance(
+            node,
+            ast.ClassDef
+            | ast.FunctionDef
+            | ast.AsyncFunctionDef
+            | ast.arg,
+        ):
+            self._track_name_definition(
+                node,
+                node.arg
+                if isinstance(node, ast.arg)
+                else node.name
+            )
+            self.generic_visit(node)
+        else:
+            super().visit(node)
+    ...
+</code></pre>
