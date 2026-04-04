@@ -1512,7 +1512,6 @@ dict = {}
 [id=example-solution-5]
 ### Example solution
 
-
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
     Let's update our <code>ImportVisitor</code> to track names and report name masking:
@@ -1662,4 +1661,126 @@ class ImportVisitor(ast.NodeVisitor):
         else:
             super().visit(node)
     ...
+</code></pre>
+
+---
+
+[id=exercise-6]
+### Exercise
+
+We are now ready to detect missing name definitions and unused imports. Missing name definitions can be detected during the AST traversal, but unused imports will have to be checked at the end (after we have counted the number of times each import is used). Make the following changes to the `ImportVisitor` to add this functionality:
+
+- Update `visit_Name()` to handle the `ast.Load` context. Here, you should flag missing name definitions.
+- Track the number of times an import is accessed (not defined), and use this information to flag unused imports after the traveral has finished.
+
+---
+
+[id=example-solution-6]
+### Example solution
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Let's go over the changes to the <code>ImportVisitor</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    The first change is in <code>_visit_import()</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We now track the import's line number and the number of times it was accessed:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    In <code>visit_Name()</code>, we now handle the <code>ast.Load</code> context:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    The <code>ast.Load</code> context means we accessed the name:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    First, we check if the name is in scope (remember, this includes imports):
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    If not, we report that the name is missing:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    We also grab the narrowest scope of that import (<code>None</code>, if it's not an import):
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
+    If there is an in-scope import, we increment the number of times it was accessed:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="8">
+    We handle flagging unused imports in the <code>run()</code> method:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="9">
+    First, we perform the full traversal of the AST:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="10">
+    Then, we check which imports haven't been accessed and flag them:
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python" data-line-numbers="1-63|9-29|18-19|31-52|35|37-40|36-46|47-49|50|56-63|57|58-63" data-fragment-index="0">
+import ast
+import builtins
+from collections import defaultdict
+
+
+class ImportVisitor(ast.NodeVisitor):
+    ...
+
+    def _visit_import(self, node):
+        import_scope = '.'.join(self.stack)
+        self.imports_available.extend(
+            [
+                {
+                    'scope': import_scope,
+                    'import': alias.name,
+                    'from': getattr(node, 'module', None),
+                    'alias': alias.asname,
+                    'times_accessed': 0,
+                    'line_number': node.lineno,
+                }
+                for alias in node.names
+                if alias.name != '*'
+            ]
+        )
+        for alias in node.names:
+            self._track_name_definition(
+                node, alias.asname or alias.name
+            )
+        self.generic_visit(node)
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, ast.Store):
+            self._track_name_definition(node, node.id)
+
+        elif isinstance(node.ctx, ast.Load):
+            if not (
+                any(
+                    self._is_in_scope(name_info['scope'])
+                    for name_info in self.names_defined[node.id]
+                )
+            ):
+                print(
+                    f'Missing definition for {node.id}',
+                    f'on line {node.lineno}'
+                )
+
+            elif import_of_name := self.get_in_scope_import(
+                node.id
+            ):
+                import_of_name['times_accessed'] += 1
+
+        self.generic_visit(node)
+
+    ...
+
+    def run(self):
+        self.visit(self.tree)
+        for import_info in self.imports_available:
+            if not import_info['times_accessed']:
+                print(
+                    f'Unused import {import_info["import"]}',
+                    f'on line {import_info["line_number"]}',
+                )
 </code></pre>
