@@ -1370,3 +1370,49 @@ Now the `ImportVisitor` includes the scope in which each of the imports can be u
  {'scope': 'module.analyze_something',
   'import': 'pandas', 'from': None, 'alias': 'pd'}]
 ```
+
+---
+
+#### What's currently in scope?
+
+As we explore the AST, we need to be able to determine both which imports and which names (*e.g.*, variables, function definitions) are in scope. We are currently tracking imports and will add in the names later. An import is in the current scope if its scope matches the current scope or is the beginning of it.
+
+|import scope|current scope|is in scope?|
+|---|---|---|---|
+| `module` | `module` | True |
+| `module` | `module.function` | True |
+| `module` | `module.function.with` | True |
+| `module.function` | `module` | False |
+| `module.function` | `module.function.with` | True |
+
+---
+
+[id=exercise-4]
+### Exercise
+
+Write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of state of the stack during traversal:
+
+- `_is_in_scope(self, definition_scope: str) -> bool`, which given an import's scope (`definition_scope`) will return whether it is currently in scope (using the stack)
+- `get_in_scope_imports() -> list[str]`, which will filter the `imports_available` list down to only the imports that are currently in scope by calling `_is_in_scope()`
+
+*Note: We will be using `_is_in_scope()` later for checking whether other names are in scope, so don't pass in the full import dictionary inside `imports_available`.*
+
+---
+
+[id=example-solution-4]
+### Example solution
+
+The `definition_scope` is in scope if the stack starts with that path. We slice the stack and compare the lists for equality instead of comparing strings to avoid any false-positives (*e.g.*, `module.a` is a substring of `module.abc`, but they have different scopes):
+
+```python
+def _is_in_scope(self, definition_scope):
+    check_scope = definition_scope.split('.')
+    return self.stack[: len(check_scope)] == check_scope
+
+def get_in_scope_imports(self):
+    return [
+        import_info
+        for import_info in self.imports_available
+        if self._is_in_scope(import_info['scope'])
+    ]
+```
