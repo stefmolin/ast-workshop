@@ -1393,7 +1393,7 @@ As we explore the AST, we need to be able to determine both which imports and wh
 Write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of state of the stack during traversal:
 
 - `_is_in_scope(self, definition_scope: str) -> bool`, which given an import's scope (`definition_scope`) will return whether it is currently in scope (using the stack)
-- `get_in_scope_imports() -> list[str]`, which will filter the `imports_available` list down to only the imports that are currently in scope by calling `_is_in_scope()`
+- `get_in_scope_import(name: str) -> dict`, which will filter the `imports_available` list down to the import of `name` that is currently in scope by calling `_is_in_scope()` and breaking ties by selecting the narrowest scope (*e.g.*, `module.x` is narrower than `module`)
 
 *Note: We will be using `_is_in_scope()` later for checking whether other names are in scope, so don't pass in the full import dictionary inside `imports_available`.*
 
@@ -1408,14 +1408,46 @@ The `definition_scope` is in scope if the stack starts with that path. We slice 
 def _is_in_scope(self, definition_scope):
     check_scope = definition_scope.split('.')
     return self.stack[: len(check_scope)] == check_scope
+```
 
-def get_in_scope_imports(self):
-    return [
+---
+
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    The <code>get_in_scope_import()</code> method uses <code>_is_in_scope()</code> to filter imports:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    First, we grab all imports of <code>name</code> that are in scope:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    If nothing is in scope, we return <code>None</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    Otherwise, we take the narrowest scope (more dots, means deeper in the stack):
+  </p>
+</div>
+
+<div>
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-16|2-9|11-12|14-16" data-fragment-index="0">
+def get_in_scope_import(self, name):
+    scoped_imports = [
         import_info
         for import_info in self.imports_available
         if self._is_in_scope(import_info['scope'])
+        and name == (
+            import_info['alias'] or import_info['import']
+        )
     ]
-```
+
+    if not scoped_imports:
+        return None
+
+    return max(
+        scoped_imports, key=lambda x: x['scope'].count('.')
+    )
+</code></pre>
 
 ---
 
@@ -1466,7 +1498,7 @@ class ImportVisitor(ast.NodeVisitor):
 [id=exercise-5]
 ### Exercise
 
-Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`).
+Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context to keep things simple.
 
 **Bonus**: If you have time, print out a warning whenever a name is redefined within a given scope, for example:
 
