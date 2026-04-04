@@ -1135,6 +1135,31 @@ def strip_password(x: dict[str, str]) -> None:
 
 ---
 
+[id=exercise-4]
+### Exercise
+
+Create an `ast.NodeTransformer` to add placeholder messages to all `assert` calls that don't have them. We did this earlier with `ast.walk()`, and this will look very similar. We want to visit the `ast.Assert` nodes and check for the presence of a message (available in the `msg` attribute). Don't forget to return the node after visiting it, or it will be removed from the tree.
+
+---
+
+[id=example-solution-4]
+### Example solution
+
+```python
+import ast
+
+
+class AssertTransformer(ast.NodeTransformer):
+    def visit_Assert(self, node):
+        if not node.msg:
+            node.msg = ast.Constant('TODO: Add failure info')
+            ast.fix_missing_locations(node)
+        self.generic_visit(node)
+        return node
+```
+
+---
+
 ## Managing context when traversing ASTs
 
 Up until this point, we were only concerned with a node and its immediate children, but sometimes we need to understand a node's ancestry (*i.e.*, parents, grandparents, *etc.*), which, since nodes don't hold references to their parents, is not possible without some extra accounting on our end. On such case is taking into account what is in scope (variables, imports, *etc.*) when processing nodes.
@@ -1387,7 +1412,7 @@ As we explore the AST, we need to be able to determine both which imports and wh
 
 ---
 
-[id=exercise-4]
+[id=exercise-5]
 ### Exercise
 
 Write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of state of the stack during traversal:
@@ -1399,7 +1424,7 @@ Write the following methods for the `ImportVisitor` class to add the functionali
 
 ---
 
-[id=example-solution-4]
+[id=example-solution-5]
 ### Example solution
 
 The `definition_scope` is in scope if the stack starts with that path. We slice the stack and compare the lists for equality instead of comparing strings to avoid any false-positives (*e.g.*, `module.a` is a substring of `module.abc`, but they have different scopes):
@@ -1495,7 +1520,7 @@ class ImportVisitor(ast.NodeVisitor):
 
 ---
 
-[id=exercise-5]
+[id=exercise-6]
 ### Exercise
 
 Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context to keep things simple.
@@ -1509,7 +1534,7 @@ dict = {}
 
 ---
 
-[id=example-solution-5]
+[id=example-solution-6]
 ### Example solution
 
 <div class="r-stack r-stack-left">
@@ -1665,7 +1690,7 @@ class ImportVisitor(ast.NodeVisitor):
 
 ---
 
-[id=exercise-6]
+[id=exercise-7]
 ### Exercise
 
 We are now ready to detect missing name definitions and unused imports. Missing name definitions can be detected during the AST traversal, but unused imports will have to be checked at the end (after we have counted the number of times each import is used). Make the following changes to the `ImportVisitor` to add this functionality:
@@ -1675,7 +1700,7 @@ We are now ready to detect missing name definitions and unused imports. Missing 
 
 ---
 
-[id=example-solution-6]
+[id=example-solution-7]
 ### Example solution
 
 <div class="r-stack r-stack-left">
