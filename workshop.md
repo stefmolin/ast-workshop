@@ -62,6 +62,17 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 
 ---
 
+[id=prereqs]
+## Prerequisites
+
+- Comfort writing Python code, especially object-oriented programming
+- Have Python and Git installed on your computer, as well as a text editor for writing code (*e.g.*, [Visual Studio Code](https://code.visualstudio.com/))
+- Fork and clone this repository: [github.com/stefmolin/ast-workshop](https://github.com/stefmolin/ast-workshop)
+- Open up these slides in your browser and use the arrow keys to follow along: [stefaniemolin.com/ast-workshop](https://stefaniemolin.com/ast-workshop)
+- Open up the documentation for the `ast` module in browser to consult during exercises: [docs.python.org/3/library/ast.html](https://docs.python.org/3/library/ast.html)
+
+---
+
 [id=ast-definition]
 ## Abstract Syntax Tree (AST)
 
