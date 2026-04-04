@@ -1809,3 +1809,24 @@ class ImportVisitor(ast.NodeVisitor):
                     f'on line {import_info["line_number"]}',
                 )
 </code></pre>
+
+---
+
+## Want more practice?
+
+Here are some things you could try building:
+
+- Detect `print()` calls
+- Forbid relative imports
+- Require the use of certain import aliases (like `import pandas as pd`)
+- Flag duplicate imports
+- Check for unused function arguments
+
+---
+
+## Related content
+
+My PyCon Lithuania 2025 keynote "[Build Your Own (Simple) Static Code Analyzer](https://stefaniemolin.com/talks/#build-your-own-(simple)-static-code-analyzer)" is another introduction to using the AST, but focuses on generating docstrings from type annotations and signatures.
+
+- [Slides](https://stefaniemolin.com/build-your-own-simple-static-code-analyzer-talk/#/)
+- [Recording](https://www.youtube.com/watch?v=mBKs4rxDufs)
