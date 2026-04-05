@@ -47,7 +47,6 @@ highlightjs:
 fontawesome:
   version: 7.0.1
 thank_you_slide: ../thank-you-slide/thank-you.html
-# TODO: need to add the exercise timer
 ---
 
 [id=bio]
