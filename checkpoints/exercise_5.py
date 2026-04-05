@@ -83,6 +83,8 @@ if __name__ == '__main__':
             del x4['password']
     """)
 
+    print('Source code input:', source_code, 'Running linter...', sep='\n')
+
     visitor = ImportVisitor(source_code)
     visitor.run()
 
