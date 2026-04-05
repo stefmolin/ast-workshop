@@ -121,9 +121,9 @@ class Greeter:
 
 [data-transition=slide-out fade-in]
 <div class="center">
-  <img width="750" src="media/full-ast.svg" alt="The AST for greet.py visualized with Graphviz">
+  <img width="750" src="media/full-ast.svg" alt="The AST for the greet.py snippet visualized with Graphviz">
   <br/>
-  <small>The AST for <code>greet.py</code> visualized with Graphviz.</small>
+  <small>The AST for the <code>greet.py</code> snippet visualized with Graphviz.</small>
 </div>
 
 ---
@@ -194,7 +194,7 @@ Other potential use cases:
 
 ```pycon
 >>> from pathlib import Path
->>> source_code = Path('greet.py').read_text()
+>>> source_code = Path('snippets/greet.py').read_text()
 ```
 
 ---
@@ -317,6 +317,8 @@ Try passing source code that has a `SyntaxError` into `ast.parse()`. What happen
 [id=example-solution-1]
 ### Example solution
 
+---
+
 #### Syntactically-incorrect source code
 
 Let's use the following malformed `import` statement as an example of **invalid source code**:
@@ -397,9 +399,9 @@ def duplicate_list(x):
 
 [data-transition=slide-out fade-in]
 <div class="center">
-  <img width="450" src="media/assert-ast-attributes.svg" alt="The AST for assert.py visualized with Graphviz">
+  <img width="450" src="media/assert-ast-attributes.svg" alt="The AST for the assert.py snippet visualized with Graphviz">
   <br/>
-  <small>The AST for <code>assert.py</code> with node attributes visualized with Graphviz.</small>
+  <small>The AST for the <code>assert.py</code> snippet with node attributes visualized with Graphviz.</small>
 </div>
 
 ---
@@ -448,7 +450,7 @@ If we look at this for the `ast.FunctionDef` in the `body` of the `ast.Module`, 
 
 #### `ast.iter_child_nodes()`
 
-The `ast.iter_fields()` function is helpful when figuring out how to work with individual node types. The `ast.iter_child_nodes()` builds on top of this to traverse the tree starting at a given node. It yields all nodes it encounters along the way that are direct children of the starting node (they can be in any field, but they cannot be grandchildren, like the children of the `ast.Assert` node below):
+The `ast.iter_fields()` function is helpful when figuring out how to work with individual node types. The `ast.iter_child_nodes()` builds on top of this to traverse the tree starting at a given node. It yields all nodes it encounters along the way that are *direct children* of the starting node (they can be in any field, but they cannot be grandchildren, like the children of the `ast.Assert` node below would be to the `ast.FunctionDef` node):
 
 ```pycon
 >>> print(list(ast.iter_child_nodes(func_def)))
@@ -459,13 +461,13 @@ The `ast.iter_fields()` function is helpful when figuring out how to work with i
 
 ---
 
-To traverse the entire tree, we need the recursive behavior provided in the `ast.walk()` function or the `ast.NodeVisitor`/`ast.NodeTransformer` classes. Each of these builds upon the `ast.iter_fields()` and `ast.iter_child_nodes()` functions we just looked at. Let's start with the `ast.walk()` function
+To traverse the entire tree, we need the recursive behavior provided in the `ast.walk()` function or the `ast.NodeVisitor`/`ast.NodeTransformer` classes. Each of these builds upon the `ast.iter_fields()` and `ast.iter_child_nodes()` functions we just looked at. Let's start with the `ast.walk()` function.
 
 ---
 
 #### `ast.walk()`
 
-The `ast.walk()` function recursively yields all descendant nodes in the AST. Let's use it to make sure all `assert` calls provide a message when the `assert` is false and an `AssertionError` is raised. For those unfamiliar with the syntax, here's a comparison using the contents of `assert.py`:
+The `ast.walk()` function recursively yields all descendant nodes in the AST. Let's use it to make sure all `assert` calls provide a message when the `assert` is false and an `AssertionError` is raised. For those unfamiliar with the syntax, here's a comparison using the contents of the `assert.py` snippet:
 
 ```python
 # without custom message
@@ -555,7 +557,7 @@ The `ast.unparse()` function comes with some caveats:
 
 ---
 
-One way that the round-trip could result in equivalent, but different source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they don't they have no effect on the logic of the program. For example, if we try to round-trip this code:
+One way that the round-trip could result in equivalent, but different source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they have no effect on the logic of the program. For example, let's try to round-trip this code:
 
 ```python
 import contextlib
@@ -641,7 +643,7 @@ def strip_password(credentials: dict[str, str]) -> None:
 [id=exercise-2]
 ### Exercise
 
-Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse the AST for `greet.py` and report any items that are missing docstrings.
+Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse the AST for the `greet.py` snippet and report any items that are missing docstrings.
 
 ---
 
@@ -659,7 +661,7 @@ Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse
     We try to access each node's docstring and <code>suppress</code> any <code>TypeErrors</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
-    If there isn't a docstring, we report it along with the node's name:
+    If there isn't a docstring on a node that can have one, we report it:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
     The module, <code>Greeter</code> class, and the <code>Greeter</code> class's methods lack docstrings:
@@ -692,7 +694,7 @@ The `ast.walk()` function yields the nodes in no specific order, so we don't hav
 
 ### Depth-first traversal
 
-The `ast` module provides two classes that for depth-first traversal of an AST:
+The `ast` module provides two classes that perform depth-first traversal of an AST:
 
 <ul>
     <li class="fragment"><code>ast.NodeVisitor</code>: visits nodes in an AST</li>
@@ -701,7 +703,13 @@ The `ast` module provides two classes that for depth-first traversal of an AST:
 
 ---
 
-Suppose we want to check our code for the `try`/`except`/`pass` anti-pattern like the following code from `try_except.py`:
+### `ast.NodeVisitor`
+
+When we subclass `ast.NodeVisitor`, we create `visit_<NodeType>()` methods for each AST node we want to visit, and the `ast.NodeVisitor` will take care of calling them as nodes of that type are encountered.
+
+---
+
+Suppose we want to check our code for the following `try`/`except`/`pass` anti-pattern like the following code from the `try_except.py` snippet:
 
 ```python
 def strip_password(x: dict[str, str]) -> None:
@@ -727,17 +735,10 @@ def strip_password(x: dict[str, str]) -> None:
 
 ---
 
-### `ast.NodeVisitor`
-
-When we subclass `ast.NodeVisitor`, we create `visit_<NodeType>()` methods for each AST node we want to visit and the `ast.NodeVisitor` will take care of calling them as nodes of that type are encountered.
-
----
-
 We need to visit each `ast.Try` node and inspect its `handlers` &ndash; if there is only one handler and its `body` is an `ast.Pass` node then we will report it:
 
 ```python
 class TryExceptVisitor(ast.NodeVisitor):
-
     def visit_Try(self, node):
         if (
             len(node.handlers) == 1
@@ -763,7 +764,7 @@ try/except/pass block on line 3, use contextlib.suppress
 
 ---
 
-We aren't done yet though. The `visit_Try()` method is currently cutting off the traversal to descendants of `ast.Try` nodes, meaning our visitor never visits nested `try` blocks (only the outermost one). Consider this example of nested `try` blocks from `try_except_nested.py`, where we want to detect the anti-pattern in the inner `try`:
+We aren't done yet though. The `visit_Try()` method is currently cutting off the traversal to descendants of `ast.Try` nodes, meaning our visitor never visits nested `try` blocks (only the outermost one). Consider this example of nested `try` blocks from the `try_except_nested.py` snippet, where we want to detect the anti-pattern in the inner `try`:
 
 ```python [highlight-lines="1-9|4-7"][class="hide-line-numbers"]
 def strip_password(x: dict[str, str]) -> None:
@@ -792,9 +793,9 @@ The `TryExceptVisitor` doesn't find anything with this input because it doesn't 
 
 [data-transition=slide-out fade-in]
 <div class="center">
-  <img width="300" src="media/animation-try-except-nested-blocked.gif" alt="Partial AST traversal of try_except_nested.py with the initial TryExceptVisitor visualized with Graphviz">
+  <img width="300" src="media/animation-try-except-nested-blocked.gif" alt="Partial AST traversal of the try_except_nested.py snippet with the initial TryExceptVisitor visualized with Graphviz">
   <br/>
-  <small>Partial AST traversal of <code>try_except_nested.py</code> with the initial <code>TryExceptVisitor</code> visualized with Graphviz.</small>
+  <small>Partial AST traversal of the <code>try_except_nested.py</code> snippet with the initial <code>TryExceptVisitor</code> visualized with Graphviz.</small>
 </div>
 
 ---
@@ -838,9 +839,9 @@ try/except/pass block on line 5, use contextlib.suppress
 
 [data-transition=slide-out fade-in]
 <div class="center">
-  <img width="700" src="media/animation-try-except-nested-full.gif" alt="Full AST traversal of try_except_nested.py visualized with Graphviz">
+  <img width="700" src="media/animation-try-except-nested-full.gif" alt="Full AST traversal of the try_except_nested.py snippet visualized with Graphviz">
   <br/>
-  <small>Full AST traversal of <code>try_except_nested.py</code> visualized with Graphviz.</small>
+  <small>Full AST traversal of the <code>try_except_nested.py</code> snippet visualized with Graphviz.</small>
 </div>
 
 ---
@@ -848,7 +849,7 @@ try/except/pass block on line 5, use contextlib.suppress
 [id=exercise-3]
 ### Exercise
 
-Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptionHandler` nodes. You can test it using the source code in `generic_exception.py`:
+Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptionHandler` nodes. You can test it using the source code in the `generic_exception.py` snippet:
 
 ```python
 try:
