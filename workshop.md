@@ -62,7 +62,7 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 
 ---
 
-[id=prereqs]
+[id=prerequisites]
 ## Prerequisites
 
 - Comfort writing Python code, especially object-oriented programming
