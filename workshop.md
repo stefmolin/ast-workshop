@@ -85,7 +85,6 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 
 ---
 
-[id=ast-definition]
 ### Abstract Syntax Tree (AST)
 
 <ul>
@@ -168,7 +167,6 @@ Other potential use cases:
 
 ---
 
-[id=asts-in-python]
 ### ASTs in Python
 
 <ul>
