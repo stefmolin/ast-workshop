@@ -1779,7 +1779,7 @@ We are now ready to detect missing name definitions and unused imports. Missing 
 
 <div>
 <pre>
-    <code data-trim class="language-python" data-line-numbers="1-63|9-29|18-19|31-52|35|37-40|36-46|47-49|50|56-63|57|58-63" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-63|9-29|18-19|31-52|35|37-40|36-46|47-49|50|56-63|57|58-63" data-fragment-index="0">
 import ast
 import builtins
 from collections import defaultdict
