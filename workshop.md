@@ -6,11 +6,11 @@ published: "2026-04-11T00:00:00.000-04:00"
 g_tag: G-25389D1SR4
 keywords: [ast, abstract-syntax-tree, python]
 og:
-  image: # TODO
-    url: https://stefaniemolin.com/build-your-own-simple-static-code-analyzer-talk/media/traversal-animation.gif
-    width: 1368
-    height: 1079
-    alt: Animation of AST traversal in Python on a simple module with a class and two methods.
+  image:
+    url: https://stefaniemolin.com/ast-workshop/media/animation-try-except-nested-full.gif
+    width: 1576
+    height: 1299
+    alt: Animation of AST traversal in Python on a nested try/except block.
   locale: en_US
   site_name: Stefanie Molin
   title: "{title} | {author}"
