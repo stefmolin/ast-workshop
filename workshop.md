@@ -729,7 +729,7 @@ def strip_password(x: dict[str, str]) -> None:
 
 ---
 
-#### `ast.NodeVisitor`
+### `ast.NodeVisitor`
 
 When we subclass `ast.NodeVisitor`, we create `visit_<NodeType>()` methods for each AST node we want to visit and the `ast.NodeVisitor` will take care of calling them as nodes of that type are encountered.
 
@@ -801,7 +801,7 @@ The `TryExceptVisitor` doesn't find anything with this input because it doesn't 
 
 ---
 
-##### The `generic_visit()` method
+### The `generic_visit()` method
 
 When we don't define a dedicated `visit_<NodeType>()` method for an AST node, the `ast.NodeVisitor` calls the `generic_visit()` method, which continues the traversal. The `visit_Try()` method we defined does not currently call `generic_visit()` on that node, so the traversal does not go any deeper.
 
@@ -999,7 +999,7 @@ Bare except on line 25:
 
 ---
 
-#### `ast.NodeTransformer`
+### `ast.NodeTransformer`
 
 The `ast.NodeTransformer` performs the traversal in the same way that the `ast.NodeVisitor` does, but it can modify the AST. So far, each of our `visit_*()` methods haven't returned anything (implicit return of `None`). However, with the `ast.NodeTransformer`, the return value modifies the AST:
 
