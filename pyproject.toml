@@ -1,0 +1,12 @@
+[project]
+name = "ast-workshop"
+version = "1.0.0"
+requires-python = ">=3.10"
+dependencies = []
+
+
+[tool.ruff]
+line-length = 88
+format.indent-style = "space"
+format.quote-style = "single"
+format.docstring-code-format = true

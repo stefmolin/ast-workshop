@@ -308,7 +308,7 @@ Module(
 ---
 
 [id=exercise-1]
-### Exercise
+### Exercise 1
 
 Try passing source code that has a `SyntaxError` into `ast.parse()`. What happens? What about if the code has an error unrelated to syntax, like a `NameError` or `TypeError`?
 
@@ -641,7 +641,7 @@ def strip_password(credentials: dict[str, str]) -> None:
 ---
 
 [id=exercise-2]
-### Exercise
+### Exercise 2
 
 Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse the AST for the `greet.py` snippet and report any items that are missing docstrings.
 
@@ -856,7 +856,7 @@ try/except/pass block on line 5, use contextlib.suppress
 ---
 
 [id=exercise-3]
-### Exercise
+### Exercise 3
 
 Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptionHandler` nodes. You can test it using the source code in the `generic_exception.py` snippet:
 
@@ -1174,7 +1174,7 @@ def strip_password(x: dict[str, str]) -> None:
 ---
 
 [id=exercise-4]
-### Exercise
+### Exercise 4
 
 Create an `ast.NodeTransformer` to add placeholder messages to all `assert` calls that don't have them. We did this earlier with `ast.walk()`, and this will look very similar. We want to visit the `ast.Assert` nodes and check for the presence of a message (available in the `msg` attribute). Don't forget to return the node after visiting it, or it will be removed from the tree.
 
@@ -1456,7 +1456,7 @@ As we explore the AST, we need to be able to determine both which imports and wh
 ---
 
 [id=exercise-5]
-### Exercise
+### Exercise 5
 
 Write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of the stack during traversal:
 
@@ -1564,7 +1564,7 @@ class ImportVisitor(ast.NodeVisitor):
 ---
 
 [id=exercise-6]
-### Exercise
+### Exercise 6
 
 Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context on `ast.Name` nodes to keep things simple.
 
@@ -1734,7 +1734,7 @@ class ImportVisitor(ast.NodeVisitor):
 ---
 
 [id=exercise-7]
-### Exercise
+### Exercise 7
 
 We are now ready to detect missing name definitions and unused imports. Missing name definitions can be detected during the AST traversal, but unused imports will have to be checked at the end (after we have counted the number of times each import is used). Make the following changes to the `ImportVisitor` to add this functionality:
 
