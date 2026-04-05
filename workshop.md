@@ -557,7 +557,7 @@ The `ast.unparse()` function comes with some caveats:
 
 ---
 
-One way that the round-trip could result in equivalent, but different source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they have no effect on the logic of the program. For example, let's try to round-trip this code:
+One way that the round-trip could result in equivalent, but different source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they have no effect on the logic of the program. For example, consider this code, which has both:
 
 ```python
 import contextlib
