@@ -175,6 +175,7 @@ cython_debug/
 
 # generated slides
 slides/
+media/qr-code.png
 
 # other stuff
 .DS_Store
