@@ -122,7 +122,7 @@ class Greeter:
 
 [data-transition=slide-out fade-in]
 <div class="center">
-  <img width="650" src="media/full-ast.svg" alt="The AST for greet.py visualized with Graphviz">
+  <img width="750" src="media/full-ast.svg" alt="The AST for greet.py visualized with Graphviz">
   <br/>
   <small>The AST for <code>greet.py</code> visualized with Graphviz.</small>
 </div>
