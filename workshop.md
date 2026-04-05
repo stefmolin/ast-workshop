@@ -73,8 +73,13 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 
 ---
 
+[id=section-1,class=section-intro-slide]
+## Introduction to ASTs
+
+---
+
 [id=ast-definition]
-## Abstract Syntax Tree (AST)
+### Abstract Syntax Tree (AST)
 
 <ul>
   <li class="fragment fade-in">
@@ -157,7 +162,7 @@ Other potential use cases:
 ---
 
 [id=asts-in-python]
-## ASTs in Python
+### ASTs in Python
 
 <ul>
   <li class="fragment fade-in">
@@ -177,12 +182,12 @@ Other potential use cases:
 ---
 
 [id=parsing-python-source-code-into-an-ast]
-### Parsing Python source code into an AST
+#### Parsing Python source code into an AST
 
 ---
 
 [id=read-in-the-source-code]
-#### 1. Read in the source code
+##### 1. Read in the source code
 
 ```pycon
 >>> from pathlib import Path
@@ -192,7 +197,7 @@ Other potential use cases:
 ---
 
 [id=parse-source-code-with-the-ast-module]
-#### 2. Parse it with the `ast` module
+##### 2. Parse it with the `ast` module
 
 If the code is syntactically-correct, we get an AST back:
 
@@ -206,7 +211,7 @@ If the code is syntactically-correct, we get an AST back:
 ---
 
 [id=inspecting-the-ast]
-### Inspecting the AST
+#### Inspecting the AST
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
@@ -372,7 +377,12 @@ Module(body=[Expr(value=BinOp(...))], type_ignores=[])
 
 ---
 
+[id=section-2,class=section-intro-slide]
 ## Working with ASTs
+
+---
+
+### AST node attributes
 
 In addition to being a highly-nested structure, attributes containing nodes may be named differently across node types. To see this, let's take a look at the AST for the following snippet in `assert.py`:
 
@@ -1171,7 +1181,12 @@ class AssertTransformer(ast.NodeTransformer):
 
 ---
 
-## Managing context when traversing ASTs
+[id=section-3,class=section-intro-slide]
+## Building an import linter
+
+---
+
+### Managing context during traversal
 
 Up until this point, we were only concerned with a node and its immediate children, but sometimes we need to understand a node's ancestry (*i.e.*, parents, grandparents, *etc.*), which, since nodes don't hold references to their parents, is not possible without some extra accounting on our end. On such case is taking into account what is in scope (variables, imports, *etc.*) when processing nodes.
 
