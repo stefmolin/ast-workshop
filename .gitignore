@@ -172,3 +172,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# generated slides
+slides/
+media/qr-code.png
+
+# other stuff
+.DS_Store
