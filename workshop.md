@@ -1190,9 +1190,9 @@ class AssertTransformer(ast.NodeTransformer):
 
 ### Managing context during traversal
 
-Up until this point, we were only concerned with a node and its immediate children, but sometimes we need to understand a node's ancestry (*i.e.*, parents, grandparents, *etc.*), which, since nodes don't hold references to their parents, is not possible without some extra accounting on our end. On such case is taking into account what is in scope (variables, imports, *etc.*) when processing nodes.
+Up until this point, we were only concerned with a node and its immediate children, but sometimes we need to understand a node's ancestry (*i.e.*, parents, grandparents, *etc.*), which, since nodes don't hold references to their parents, is not possible without some extra accounting on our end. One such case is taking into account what is in scope (variables, imports, *etc.*) when processing nodes.
 
-<p class="fragment">In this section, we see how to track this information to find missing and unused imports.</p>
+<p class="fragment">In this section, we will learn how to track this information as we build an import linter capable of flagging unused imports, along with masked and missing names.</p>
 
 ---
 
@@ -1227,7 +1227,7 @@ Up until this point, we were only concerned with a node and its immediate childr
     We use <code>getattr()</code> here because this is only for <code>ast.ImportFrom</code> nodes:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="8">
-    We add this list of imports extracted from the node to <code>imports_available</code>:
+    We add the imports extracted from the node to <code>imports_available</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="9">
     As we have seen before, we call <code>generic_visit()</code> to continue the traversal:
@@ -1316,7 +1316,7 @@ Our `ImportVisitor` finds each of the imports:
 
 ### Tracking import scope
 
-In order to flag missing imports and unused imports, we need to know, which imports are available to us. However, right now, we don't have the full story &ndash; we need to account for their scope. For example, the import of `json` on line 2, is only available with the scope of the `get_data()` function, which is narrower than the module scope, in which we call `json.dump()` on line 8:
+In order to flag missing names and unused imports, we need to know which imports are available to us. However, right now, we don't have the full story &ndash; we need to account for their scope. For example, the import of `json` on line 2, is only available with the scope of the `get_data()` function, which is narrower than the module scope, in which we call `json.dump()` on line 8:
 
 ```python [highlight-lines="1-8"]
 def get_data():
@@ -1344,10 +1344,10 @@ json.dump(data, 'data.json')
     Each time we visit an import node, we will now record the scope:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
-    A node's scope is the path from it to the root of the tree:
+    A node's scope is the path to it from the root of the tree:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
-    We will override <code>generic_visit()</code> to keep the stack up-to-date:
+    We will override the <code>generic_visit()</code> method to keep the stack up-to-date:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="4">
     Each time we visit a node that has a <code>body</code> attribute, our scope changes:
@@ -1356,7 +1356,7 @@ json.dump(data, 'data.json')
     We call the superclass's <code>generic_visit()</code> method to continue the traversal:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="6">
-    Afterward, we remove the node from the stack (remember this is depth first):
+    Afterward, we remove the node from the stack (remember, this is depth first):
   </p>
 </div>
 
@@ -1408,7 +1408,7 @@ class ImportVisitor(ast.NodeVisitor):
 
 ---
 
-Now the `ImportVisitor` includes the scope in which each of the imports can be used, and we are one step closer to detecting missing and unused imports:
+Now the `ImportVisitor` includes the scope in which each of the imports can be used, and we are one step closer to detecting missing names and unused imports:
 
 ```pycon [highlight-lines="6-11|6,8,10"][class="hide-line-numbers"]
 >>> from pathlib import Path
@@ -1428,7 +1428,7 @@ Now the `ImportVisitor` includes the scope in which each of the imports can be u
 
 #### What's currently in scope?
 
-As we explore the AST, we need to be able to determine both which imports and which names (*e.g.*, variables, function definitions) are in scope. We are currently tracking imports and will add in the names later. An import is in the current scope if its scope matches the current scope or is the beginning of it.
+As we explore the AST, we need to be able to determine both which imports and which names (*e.g.*, variables, function definitions) are in scope. An import is in the current scope if its scope matches the current scope or is a prefix of it.
 
 |import scope|current scope|is in scope?|
 |---|---|---|---|
@@ -1443,10 +1443,10 @@ As we explore the AST, we need to be able to determine both which imports and wh
 [id=exercise-5]
 ### Exercise
 
-Write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of state of the stack during traversal:
+Write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of the stack during traversal:
 
 - `_is_in_scope(self, definition_scope: str) -> bool`, which given an import's scope (`definition_scope`) will return whether it is currently in scope (using the stack)
-- `get_in_scope_import(name: str) -> dict`, which will filter the `imports_available` list down to the import of `name` that is currently in scope by calling `_is_in_scope()` and breaking ties by selecting the narrowest scope (*e.g.*, `module.x` is narrower than `module`)
+- `get_in_scope_import(self, name: str) -> dict | None`, which will filter the `imports_available` list down to the import of `name` that is currently in scope by calling `_is_in_scope()` and breaking ties by selecting the narrowest scope (*e.g.*, `module.x` is narrower than `module`)
 
 *Note: We will be using `_is_in_scope()` later for checking whether other names are in scope, so don't pass in the full import dictionary inside `imports_available`.*
 
@@ -1458,7 +1458,7 @@ Write the following methods for the `ImportVisitor` class to add the functionali
 The `definition_scope` is in scope if the stack starts with that path. We slice the stack and compare the lists for equality instead of comparing strings to avoid any false-positives (*e.g.*, `module.a` is a substring of `module.abc`, but they have different scopes):
 
 ```python
-def _is_in_scope(self, definition_scope):
+def _is_in_scope(self, definition_scope: str) -> bool:
     check_scope = definition_scope.split('.')
     return self.stack[: len(check_scope)] == check_scope
 ```
@@ -1484,7 +1484,7 @@ def _is_in_scope(self, definition_scope):
 <div>
 <pre>
     <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-16|2-9|11-12|14-16" data-fragment-index="0">
-def get_in_scope_import(self, name):
+def get_in_scope_import(self, name: str) -> dict | None:
     scoped_imports = [
         import_info
         for import_info in self.imports_available
@@ -1551,7 +1551,7 @@ class ImportVisitor(ast.NodeVisitor):
 [id=exercise-6]
 ### Exercise
 
-Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context to keep things simple.
+Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context on `ast.Name` nodes to keep things simple.
 
 **Bonus**: If you have time, print out a warning whenever a name is redefined within a given scope, for example:
 
@@ -1736,13 +1736,13 @@ We are now ready to detect missing name definitions and unused imports. Missing 
     Let's go over the changes to the <code>ImportVisitor</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
-    The first change is in <code>_visit_import()</code>:
+    The first change is in the <code>_visit_import()</code> method:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
     We now track the import's line number and the number of times it was accessed:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
-    In <code>visit_Name()</code>, we now handle the <code>ast.Load</code> context:
+    In the <code>visit_Name()</code> method, we now handle the <code>ast.Load</code> context:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
     The <code>ast.Load</code> context means we accessed the name:
@@ -1772,7 +1772,7 @@ We are now ready to detect missing name definitions and unused imports. Missing 
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-63|9-29|18-19|31-52|35|37-40|36-46|47-49|50|56-63|57|58-63" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-64|9-29|18-19|31-53|35|37-41|36-46|48-50|51|56-64|58|59-64" data-fragment-index="0">
 import ast
 import builtins
 from collections import defaultdict
@@ -1811,7 +1811,8 @@ class ImportVisitor(ast.NodeVisitor):
             if not (
                 any(
                     self._is_in_scope(name_info['scope'])
-                    for name_info in self.names_defined[node.id]
+                    for name_info
+                    in self.names_defined[node.id]
                 )
             ):
                 print(
@@ -1840,14 +1841,21 @@ class ImportVisitor(ast.NodeVisitor):
 
 ---
 
-## Want more practice?
+### Potential next steps
 
-Here are some things you could try building:
+- Remove the unused imports with an `ast.NodeTransformer`
+- Account for deleting names with `del` (this is the `ast.Del` context)
+- Handle `from x import *`
+- Suggest imports when names are missing like Python does for certain `NameErrors`
+- Flag and remove duplicate imports
+
+[notes]
+
+Here are some things you could try building for additional practice:
 
 - Detect `print()` calls
 - Forbid relative imports
 - Require the use of certain import aliases (like `import pandas as pd`)
-- Flag duplicate imports
 - Check for unused function arguments
 
 ---
