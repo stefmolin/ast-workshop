@@ -1458,7 +1458,7 @@ As we explore the AST, we need to be able to determine both which imports and wh
 [id=exercise-5]
 ### Exercise 5
 
-Write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of the stack during traversal:
+Starting from `checkpoints/exercise_5.py`, write the following methods for the `ImportVisitor` class to add the functionality to determine which imports are in scope given the current state of the stack during traversal:
 
 - `_is_in_scope(self, definition_scope: str) -> bool`, which given an import's scope (`definition_scope`) will return whether it is currently in scope (using the stack)
 - `get_in_scope_import(self, name: str) -> dict | None`, which will filter the `imports_available` list down to the import of `name` that is currently in scope by calling `_is_in_scope()` and breaking ties by selecting the narrowest scope (*e.g.*, `module.x` is narrower than `module`)
@@ -1566,7 +1566,7 @@ class ImportVisitor(ast.NodeVisitor):
 [id=exercise-6]
 ### Exercise 6
 
-Update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context on `ast.Name` nodes to keep things simple.
+Starting from `checkpoints/exercise_6.py`, update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context on `ast.Name` nodes to keep things simple.
 
 **Bonus**: If you have time, print out a warning whenever a name is redefined within a given scope, for example:
 
@@ -1736,7 +1736,7 @@ class ImportVisitor(ast.NodeVisitor):
 [id=exercise-7]
 ### Exercise 7
 
-We are now ready to detect missing name definitions and unused imports. Missing name definitions can be detected during the AST traversal, but unused imports will have to be checked at the end (after we have counted the number of times each import is used). Make the following changes to the `ImportVisitor` to add this functionality:
+We are now ready to detect missing name definitions and unused imports. Missing name definitions can be detected during the AST traversal, but unused imports will have to be checked at the end (after we have counted the number of times each import is used). Starting from `checkpoints/exercise_7.py`, make the following changes to the `ImportVisitor` to add this functionality:
 
 - Update `visit_Name()` to handle the `ast.Load` context. Here, you should flag missing name definitions.
 - Track the number of times an import is accessed (not defined), and use this information to flag unused imports after the traveral has finished.
@@ -1858,10 +1858,12 @@ class ImportVisitor(ast.NodeVisitor):
 
 ### Potential next steps
 
-- Remove the unused imports with an `ast.NodeTransformer`
+As far as this workshop is concerned, we are done with the `ImportVisitor`, but, if you would like more practice, it can still be extended further. You can use the version found in `checkpoints/final.py` as a starting point for further enhancements:
+
 - Account for deleting names with `del` (this is the `ast.Del` context)
 - Handle `from x import *`
 - Suggest imports when names are missing like Python does for certain `NameErrors`
+- Remove the unused imports by converting it to an `ast.NodeTransformer`
 - Flag and remove duplicate imports
 
 [notes]
