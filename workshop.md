@@ -1000,7 +1000,7 @@ Bare except on line 25:
 
 ### `ast.NodeTransformer`
 
-The `ast.NodeTransformer` performs the traversal in the same way that the `ast.NodeVisitor` does, but it can modify the AST. So far, each of our `visit_*()` methods haven't returned anything (implicit return of `None`). However, with the `ast.NodeTransformer`, the return value modifies the AST:
+The `ast.NodeTransformer` performs the traversal in the same way that the `ast.NodeVisitor` does, but it can modify the AST. So far, each of our `visit_*()` methods haven't returned anything (implicitly, they return `None`). However, with the `ast.NodeTransformer`, the return value modifies the AST:
 
 - Returning `None` deletes the subtree rooted at that node (*i.e.*, that node and all of its descendants)
 - Returning `transformed_node` replaces the subtree rooted at the visited node with `transformed_node` (or keeps it if it wasn't modified)
@@ -1043,7 +1043,7 @@ def strip_password(x: dict[str, str]) -> None:
     We start by inheriting from <code>ast.NodeTransformer</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
-    Here <code>has_changed</code> indicates whether we need to add an import for <code>contextlib</code>:
+    <code>has_changed</code> indicates whether we need to add an import for <code>contextlib</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
     <code>_get_suppress_block()</code> will take a <code>ast.Try</code> node and convert it:
