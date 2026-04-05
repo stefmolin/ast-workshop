@@ -73,6 +73,15 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 
 ---
 
+[id=agenda]
+## Agenda
+
+1. [Introduction to ASTs](#section-1)
+2. [Working with ASTs](#section-2)
+3. [Building an import linter](#section-3)
+
+---
+
 [id=section-1,class=section-intro-slide]
 ## Introduction to ASTs
 
