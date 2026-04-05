@@ -105,7 +105,7 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 
 ---
 
-[data-transition=slide-in fade-out,id=greeter-snippet]
+[data-transition=slide-in fade-out]
 
 Let's see what this code snippet (`greet.py`) looks like when represented as an AST:
 
@@ -120,7 +120,7 @@ class Greeter:
 
 ---
 
-[data-transition=slide-out fade-in,id=greeter-snippet-ast]
+[data-transition=slide-out fade-in]
 <div class="center">
   <img width="650" src="media/full-ast.svg" alt="The AST for greet.py visualized with Graphviz">
   <br/>
@@ -188,12 +188,10 @@ Other potential use cases:
 
 ---
 
-[id=parsing-python-source-code-into-an-ast]
 #### Parsing Python source code into an AST
 
 ---
 
-[id=read-in-the-source-code]
 ##### 1. Read in the source code
 
 ```pycon
@@ -203,7 +201,6 @@ Other potential use cases:
 
 ---
 
-[id=parse-source-code-with-the-ast-module]
 ##### 2. Parse it with the `ast` module
 
 If the code is syntactically-correct, we get an AST back:
@@ -217,7 +214,6 @@ If the code is syntactically-correct, we get an AST back:
 
 ---
 
-[id=inspecting-the-ast]
 #### Inspecting the AST
 
 <div class="r-stack r-stack-left">
