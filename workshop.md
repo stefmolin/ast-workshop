@@ -41,7 +41,6 @@ reveal:
     hash: true
     history: true
     pdfSeparateFragments: false
-    slideNumber: c/t # TODO: decide on this
 highlightjs:
   version: 11.11.1
   theme: stackoverflow-light
