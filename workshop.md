@@ -754,7 +754,10 @@ class TryExceptVisitor(ast.NodeVisitor):
 
 To use our visitor, we instantiate it and call its `visit()` method, passing in the AST, to start the traversal:
 
-```pycon [highlight-lines="1-5|3|4|5"][class="hide-line-numbers"]
+```pycon [highlight-lines="1-8|6|7|8"][class="hide-line-numbers"]
+>>> import ast
+>>> from pathlib import Path
+>>>
 >>> source_code = Path('snippets/try_except.py').read_text()
 >>> tree = ast.parse(source_code)
 >>> visitor = TryExceptVisitor()
@@ -783,6 +786,9 @@ def strip_password(x: dict[str, str]) -> None:
 The `TryExceptVisitor` doesn't find anything with this input because it doesn't go any deeper after it visits the outermost `try`:
 
 ```pycon
+>>> import ast
+>>> from pathlib import Path
+>>>
 >>> source_code = Path('snippets/try_except_nested.py')
 >>> tree = ast.parse(source_code.read_text())
 >>> visitor = TryExceptVisitor()
@@ -827,7 +833,10 @@ class TryExceptVisitor(ast.NodeVisitor):
 
 The `TryExceptVisitor` now visits the innermost `try` and detects the issue:
 
-```pycon [highlight-lines="5"][class="hide-line-numbers"]
+```pycon [highlight-lines="8"][class="hide-line-numbers"]
+>>> import ast
+>>> from pathlib import Path
+>>>
 >>> source_code = Path('snippets/try_except_nested.py')
 >>> tree = ast.parse(source_code.read_text())
 >>> visitor = TryExceptVisitor()
@@ -970,7 +979,10 @@ class GenericExceptionVisitor(ast.NodeVisitor):
 
 Using the `GenericExceptionVisitor` is a little different. This time, we pass in the source code when we initialize it, and we call the `run()` method to kick off the traversal:
 
-```pycon [highlight-lines="1-5|6-23"][class="hide-line-numbers"]
+```pycon [highlight-lines="1-8|9-26"][class="hide-line-numbers"]
+>>> import ast
+>>> from pathlib import Path
+>>>
 >>> source_code = Path('snippets/generic_exception.py')
 >>> visitor = GenericExceptionVisitor(
 ...     source_code.read_text()
@@ -1142,7 +1154,10 @@ class TryExceptTransformer(ast.NodeTransformer):
 
 We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, like the loss of comments and formatting:
 
-```pycon [highlight-lines="1-3|4|5-9"][class="hide-line-numbers"]
+```pycon [highlight-lines="1-6|7|8-12"][class="hide-line-numbers"]
+>>> import ast
+>>> from pathlib import Path
+>>>
 >>> source_code = Path('snippets/try_except.py')
 >>> transformer = TryExceptTransformer(source_code)
 >>> updated_ast = transformer.run()
