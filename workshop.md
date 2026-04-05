@@ -77,8 +77,8 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 ## Agenda
 
 1. [Introduction to ASTs](#section-1)
-2. [Working with ASTs](#section-2)
-3. [Building an import linter](#section-3)
+2. [Working With ASTs](#section-2)
+3. [Building an Import Linter](#section-3)
 
 ---
 
@@ -387,7 +387,7 @@ Module(body=[Expr(value=BinOp(...))], type_ignores=[])
 ---
 
 [id=section-2,class=section-intro-slide]
-## Working with ASTs
+## Working With ASTs
 
 ---
 
@@ -1191,7 +1191,7 @@ class AssertTransformer(ast.NodeTransformer):
 ---
 
 [id=section-3,class=section-intro-slide]
-## Building an import linter
+## Building an Import Linter
 
 ---
 
