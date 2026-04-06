@@ -40,7 +40,7 @@ reveal:
     controls: false
     hash: true
     history: true
-    pdfSeparateFragments: false
+    pdfSeparateFragments: true
 highlightjs:
   version: 11.11.1
   theme: stackoverflow-light
