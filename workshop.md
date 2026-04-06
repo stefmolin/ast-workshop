@@ -737,12 +737,14 @@ def strip_password(x: dict[str, str]) -> None:
 
 We need to visit each `ast.Try` node and inspect its `handlers` &ndash; if there is only one handler and its `body` is an `ast.Pass` node then we will report it:
 
-```python
+```python [highlight-lines="1-12|4|5-12|6-8"][class="hide-line-numbers"]
+import ast
+
+
 class TryExceptVisitor(ast.NodeVisitor):
     def visit_Try(self, node):
-        if (
-            len(node.handlers) == 1
-            and isinstance(node.handlers[0].body[-1], ast.Pass)
+        if len(node.handlers) == 1 and isinstance(
+            node.handlers[0].body[-1], ast.Pass
         ):
             print(
                 'try/except/pass block on line',
