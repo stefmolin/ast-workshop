@@ -814,13 +814,14 @@ When we don't define a dedicated `visit_<NodeType>()` method for an AST node, th
 
 We need to call `generic_visit()` ourselves. Note the indentation level &ndash; it is outside of the `if` because we want to visit all nodes, regardless of whether their ancestors had the issue we are looking for:
 
-```python [highlight-lines="12"][class="hide-line-numbers"]
-class TryExceptVisitor(ast.NodeVisitor):
+```python [highlight-lines="13"][class="hide-line-numbers"]
+import ast
 
+
+class TryExceptVisitor(ast.NodeVisitor):
     def visit_Try(self, node):
-        if (
-            len(node.handlers) == 1
-            and isinstance(node.handlers[0].body[-1], ast.Pass)
+        if len(node.handlers) == 1 and isinstance(
+            node.handlers[0].body[-1], ast.Pass
         ):
             print(
                 'try/except/pass block on line',
