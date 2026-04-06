@@ -979,8 +979,7 @@ class GenericExceptionVisitor(ast.NodeVisitor):
 
 Using the `GenericExceptionVisitor` is a little different. This time, we pass in the source code when we initialize it, and we call the `run()` method to kick off the traversal:
 
-```pycon [highlight-lines="1-8|9-26"][class="hide-line-numbers"]
->>> import ast
+```pycon [highlight-lines="1-7|8-25"][class="hide-line-numbers"]
 >>> from pathlib import Path
 >>>
 >>> source_code = Path('snippets/generic_exception.py')
