@@ -6,7 +6,7 @@ dependencies = []
 
 
 [tool.ruff]
-line-length = 88
+line-length = 60
 format.indent-style = "space"
 format.quote-style = "single"
 format.docstring-code-format = true
