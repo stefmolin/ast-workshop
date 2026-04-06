@@ -75,7 +75,7 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 ## Agenda
 
 1. [Introduction to ASTs](#section-1)
-2. [Working With ASTs](#section-2)
+2. [Working with ASTs](#section-2)
 3. [Building an Import Linter](#section-3)
 
 ---
@@ -381,7 +381,7 @@ Module(body=[Expr(value=BinOp(...))], type_ignores=[])
 ---
 
 [id=section-2,class=section-intro-slide]
-## Working With ASTs
+## Working with ASTs
 
 ---
 
@@ -1615,7 +1615,7 @@ dict = {}
     For all other nodes, we preserve the superclass's behavior:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="10">
-    Now, coming back to to flagging masked names upon redefinition:
+    Now, coming back to flagging masked names upon redefinition:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="11">
     For it to be a redefinition, we need at least two occurrences of the name:
