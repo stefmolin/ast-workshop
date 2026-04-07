@@ -752,6 +752,10 @@ class TryExceptVisitor(ast.NodeVisitor):
             )
 ```
 
+<div class="center">
+    <small><em><code>examples/try_except_visitor_1.py</code></em></small>
+</div>
+
 ---
 
 To use our visitor, we instantiate it and call its `visit()` method, passing in the AST, to start the traversal:
@@ -829,6 +833,10 @@ class TryExceptVisitor(ast.NodeVisitor):
             )
         self.generic_visit(node)
 ```
+
+<div class="center">
+    <small><em><code>examples/try_except_visitor_2.py</code></em></small>
+</div>
 
 ---
 
@@ -968,6 +976,10 @@ class GenericExceptionVisitor(ast.NodeVisitor):
     def run(self):
         self.visit(self.tree)
 </code></pre>
+
+<div class="center">
+    <small><em><code>examples/generic_exception_visitor.py</code></em></small>
+</div>
 
 ---
 
@@ -1140,12 +1152,16 @@ class TryExceptTransformer(ast.NodeTransformer):
         return ast.fix_missing_locations(result)
 </code></pre>
 
+<div class="center">
+    <small><em><code>examples/try_except_transformer.py</code></em></small>
+</div>
+
 ---
 
 
 We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, like the loss of comments and formatting:
 
-```pycon [highlight-lines="1-6|7|8-12"][class="hide-line-numbers"]
+```pycon [highlight-lines="1-5|6|7|8-12"][class="hide-line-numbers"]
 >>> from pathlib import Path
 >>>
 >>> source_code = Path('snippets/try_except.py').read_text()
@@ -1186,6 +1202,10 @@ class AssertTransformer(ast.NodeTransformer):
         self.generic_visit(node)
         return node
 ```
+
+<div class="center">
+    <small><em><code>examples/assert_visitor.py</code></em></small>
+</div>
 
 ---
 
@@ -1278,6 +1298,10 @@ class ImportVisitor(ast.NodeVisitor):
     def run(self):
         self.visit(self.tree)
 </code></pre>
+
+<div class="center">
+    <small><em><code>checkpoints/initial.py</code></em></small>
+</div>
 
 ---
 
@@ -1411,6 +1435,10 @@ class ImportVisitor(ast.NodeVisitor):
     def run(self):
         self.visit(self.tree)
 </code></pre>
+
+<div class="center">
+    <small><em><code>checkpoints/stack.py</code></em></small>
+</div>
 
 ---
 
@@ -1548,6 +1576,10 @@ class ImportVisitor(ast.NodeVisitor):
             )
     ...
 ```
+
+<div class="center">
+    <small><em>Excerpt from <code>checkpoints/exercise_6.py</code></em></small>
+</div>
 
 ---
 
@@ -1719,6 +1751,10 @@ class ImportVisitor(ast.NodeVisitor):
     ...
 </code></pre>
 
+<div class="center">
+    <small><em>Excerpt from <code>checkpoints/exercise_7.py</code></em></small>
+</div>
+
 ---
 
 [id=exercise-7]
@@ -1841,6 +1877,10 @@ class ImportVisitor(ast.NodeVisitor):
                     f'on line {import_info["line_number"]}',
                 )
 </code></pre>
+
+<div class="center">
+    <small><em>Excerpt from <code>checkpoints/final.py</code></em></small>
+</div>
 
 ---
 
