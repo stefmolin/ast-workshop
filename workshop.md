@@ -756,8 +756,7 @@ class TryExceptVisitor(ast.NodeVisitor):
 
 To use our visitor, we instantiate it and call its `visit()` method, passing in the AST, to start the traversal:
 
-```pycon [highlight-lines="1-8|6|7|8"][class="hide-line-numbers"]
->>> import ast
+```pycon [highlight-lines="1-7|5|6|7"][class="hide-line-numbers"]
 >>> from pathlib import Path
 >>>
 >>> source_code = Path('snippets/try_except.py').read_text()
@@ -788,9 +787,6 @@ def strip_password(x: dict[str, str]) -> None:
 The `TryExceptVisitor` doesn't find anything with this input because it doesn't go any deeper after it visits the outermost `try`:
 
 ```pycon
->>> import ast
->>> from pathlib import Path
->>>
 >>> source_code = Path('snippets/try_except_nested.py')
 >>> tree = ast.parse(source_code.read_text())
 >>> visitor = TryExceptVisitor()
@@ -836,11 +832,7 @@ class TryExceptVisitor(ast.NodeVisitor):
 
 The `TryExceptVisitor` now visits the innermost `try` and detects the issue:
 
-```pycon [highlight-lines="8"][class="hide-line-numbers"]
->>> import ast
->>> from pathlib import Path
->>>
->>> source_code = Path('snippets/try_except_nested.py')
+```pycon [highlight-lines="4"][class="hide-line-numbers"]
 >>> tree = ast.parse(source_code.read_text())
 >>> visitor = TryExceptVisitor()
 >>> visitor.visit(tree)
