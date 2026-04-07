@@ -787,8 +787,10 @@ def strip_password(x: dict[str, str]) -> None:
 The `TryExceptVisitor` doesn't find anything with this input because it doesn't go any deeper after it visits the outermost `try`:
 
 ```pycon
->>> source_code = Path('snippets/try_except_nested.py')
->>> tree = ast.parse(source_code.read_text())
+>>> source_code = Path(
+...     'snippets/try_except_nested.py'
+... ).read_text()
+>>> tree = ast.parse(source_code)
 >>> visitor = TryExceptVisitor()
 >>> visitor.visit(tree)
 ```
@@ -833,7 +835,7 @@ class TryExceptVisitor(ast.NodeVisitor):
 The `TryExceptVisitor` now visits the innermost `try` and detects the issue:
 
 ```pycon [highlight-lines="4"][class="hide-line-numbers"]
->>> tree = ast.parse(source_code.read_text())
+>>> tree = ast.parse(source_code)
 >>> visitor = TryExceptVisitor()
 >>> visitor.visit(tree)
 try/except/pass block on line 5, use contextlib.suppress
