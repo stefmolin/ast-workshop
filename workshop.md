@@ -922,7 +922,7 @@ except:  # bare except
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-14|11-13|16-33|18-21|22-25|27-31|33|35-44|36-38|40-42|44|46-47" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-14|11-13|16-30|18-19|21-22|24-28|30|32-41|33-35|37-39|41|43-44" data-fragment-index="0">
 import ast
 from textwrap import dedent, indent
 
@@ -940,14 +940,11 @@ class GenericExceptionVisitor(ast.NodeVisitor):
 
     def visit_Raise(self, node):
         if (
-            (
-                isinstance(node.exc, ast.Name)
-                and node.exc.id == 'Exception'
-            )
-            or (
-                isinstance(node.exc, ast.Call)
-                and node.exc.func.id == 'Exception'
-            )
+            isinstance(node.exc, ast.Name)
+            and node.exc.id == 'Exception'
+        ) or (
+            isinstance(node.exc, ast.Call)
+            and node.exc.func.id == 'Exception'
         ):
             print(
                 'Generic Exception raised on line',
