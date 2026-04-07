@@ -1427,9 +1427,7 @@ class ImportVisitor(ast.NodeVisitor):
 
 Now the `ImportVisitor` includes the scope in which each of the imports can be used, and we are one step closer to detecting missing names and unused imports:
 
-```pycon [highlight-lines="6-11|6,8,10"][class="hide-line-numbers"]
->>> from pathlib import Path
->>> source_code = Path('snippets/imports.py').read_text()
+```pycon [highlight-lines="4-9|4,6,8"][class="hide-line-numbers"]
 >>> visitor = ImportVisitor(source_code)
 >>> visitor.run()
 >>> print(visitor.imports_available)
