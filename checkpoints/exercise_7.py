@@ -37,13 +37,16 @@ class ImportVisitor(ast.NodeVisitor):
             import_info
             for import_info in self.imports_available
             if self._is_in_scope(import_info['scope'])
-            and name == (import_info['alias'] or import_info['import'])
+            and name
+            == (import_info['alias'] or import_info['import'])
         ]
 
         if not scoped_imports:
             return None
 
-        return max(scoped_imports, key=lambda x: x['scope'].count('.'))
+        return max(
+            scoped_imports, key=lambda x: x['scope'].count('.')
+        )
 
     def _flag_if_masked(self, name):
         if len(definitions := self.names_defined[name]) < 2:
@@ -87,11 +90,13 @@ class ImportVisitor(ast.NodeVisitor):
                     'alias': alias.asname,
                 }
                 for alias in node.names
-                if alias.name != '*'  # not handling this special case
+                if alias.name != '*'
             ]
         )
         for alias in node.names:
-            self._track_name_definition(node, alias.asname or alias.name)
+            self._track_name_definition(
+                node, alias.asname or alias.name
+            )
         self.generic_visit(node)
 
     def visit_Name(self, node):
@@ -111,10 +116,17 @@ class ImportVisitor(ast.NodeVisitor):
         if isinstance(node, ast.Import | ast.ImportFrom):
             self._visit_import(node)
         elif isinstance(
-            node, ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef | ast.arg
+            node,
+            ast.ClassDef
+            | ast.FunctionDef
+            | ast.AsyncFunctionDef
+            | ast.arg,
         ):
             self._track_name_definition(
-                node, node.arg if isinstance(node, ast.arg) else node.name
+                node,
+                node.arg
+                if isinstance(node, ast.arg)
+                else node.name,
             )
             self.generic_visit(node)
         else:
@@ -150,7 +162,12 @@ if __name__ == '__main__':
             del x['key']
     """).strip()
 
-    print('Source code input:', source_code, 'Running linter...', sep='\n')
+    print(
+        'Source code input:',
+        source_code,
+        'Running linter...',
+        sep='\n',
+    )
 
     visitor = ImportVisitor(source_code)
     visitor.run()

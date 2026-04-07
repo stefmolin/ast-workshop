@@ -33,7 +33,7 @@ class ImportVisitor(ast.NodeVisitor):
                     'alias': alias.asname,
                 }
                 for alias in node.names
-                if alias.name != '*'  # not handling this special case
+                if alias.name != '*'
             ]
         )
         self.generic_visit(node)
@@ -83,7 +83,12 @@ if __name__ == '__main__':
             del x4['password']
     """)
 
-    print('Source code input:', source_code, 'Running linter...', sep='\n')
+    print(
+        'Source code input:',
+        source_code,
+        'Running linter...',
+        sep='\n',
+    )
 
     visitor = ImportVisitor(source_code)
     visitor.run()

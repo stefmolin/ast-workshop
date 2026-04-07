@@ -37,13 +37,16 @@ class ImportVisitor(ast.NodeVisitor):
             import_info
             for import_info in self.imports_available
             if self._is_in_scope(import_info['scope'])
-            and name == (import_info['alias'] or import_info['import'])
+            and name
+            == (import_info['alias'] or import_info['import'])
         ]
 
         if not scoped_imports:
             return None
 
-        return max(scoped_imports, key=lambda x: x['scope'].count('.'))
+        return max(
+            scoped_imports, key=lambda x: x['scope'].count('.')
+        )
 
     def _visit_import(self, node):
         import_scope = '.'.join(self.stack)
@@ -56,7 +59,7 @@ class ImportVisitor(ast.NodeVisitor):
                     'alias': alias.asname,
                 }
                 for alias in node.names
-                if alias.name != '*'  # not handling this special case
+                if alias.name != '*'
             ]
         )
         self.generic_visit(node)
@@ -98,7 +101,12 @@ if __name__ == '__main__':
             del x['key']
     """).strip()
 
-    print('Source code input:', source_code, 'Running linter...', sep='\n')
+    print(
+        'Source code input:',
+        source_code,
+        'Running linter...',
+        sep='\n',
+    )
 
     visitor = ImportVisitor(source_code)
     visitor.run()
