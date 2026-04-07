@@ -1716,7 +1716,7 @@ class ImportVisitor(ast.NodeVisitor):
                 node,
                 node.arg
                 if isinstance(node, ast.arg)
-                else node.name
+                else node.name,
             )
             self.generic_visit(node)
         else:
