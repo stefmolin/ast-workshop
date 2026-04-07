@@ -979,10 +979,10 @@ Using the `GenericExceptionVisitor` is a little different. This time, we pass in
 ```pycon [highlight-lines="1-7|8-25"][class="hide-line-numbers"]
 >>> from pathlib import Path
 >>>
->>> source_code = Path('snippets/generic_exception.py')
->>> visitor = GenericExceptionVisitor(
-...     source_code.read_text()
-... )
+>>> source_code = Path(
+...     'snippets/generic_exception.py'
+... ).read_text()
+>>> visitor = GenericExceptionVisitor(source_code)
 >>> visitor.run()
 Bare except on line 5:
 | except:
