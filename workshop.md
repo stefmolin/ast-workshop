@@ -951,7 +951,7 @@ class GenericExceptionVisitor(ast.NodeVisitor):
         ):
             print(
                 'Generic Exception raised on line',
-                f'{node.lineno}:'
+                f'{node.lineno}:',
             )
             self._print_source_segment(node)
 
