@@ -56,6 +56,7 @@ class ImportVisitor(ast.NodeVisitor):
 
 
 if __name__ == '__main__':
+    import pprint
     from textwrap import dedent
 
     source_code = dedent(r"""
@@ -93,11 +94,14 @@ if __name__ == '__main__':
     visitor = ImportVisitor(source_code)
     visitor.run()
 
+    print('Found the following imports:')
+    pprint.pprint(visitor.imports_available)
+
     # TIP: add dummy stack for testing now that imports are processed
-    visitor.stack = ['module', 'strip_password_three']
+    # visitor.stack = ['module', 'strip_password_three']
 
     # you can change the value you pass in here to test the result based on your stack
-    print(visitor.get_in_scope_import('contextlib'))
+    # print(visitor.get_in_scope_import('contextlib'))
 
     # same thing here
-    print(visitor._is_in_scope('module'))
+    # print(visitor._is_in_scope('module'))
