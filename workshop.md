@@ -1096,7 +1096,7 @@ def strip_password(x: dict[str, str]) -> None:
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-20|10-15|16-18|19|20|22-34|23-32|31-32|33|34|36-43|37|38-42|43" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-20|10-15|16-18|19|20|22-33|23-31|30-31|32|33|35-41|36|37-40|41" data-fragment-index="0">
 import ast
 from textwrap import dedent
 
@@ -1119,13 +1119,12 @@ class TryExceptTransformer(ast.NodeTransformer):
         return with_block
 
     def visit_Try(self, node):
-        if (
-            len(node.handlers) == 1
-            and isinstance(node.handlers[0].body[-1], ast.Pass)
+        if len(node.handlers) == 1 and isinstance(
+            node.handlers[0].body[-1], ast.Pass
         ):
             print(
                 'Detected a try/except/pass block on',
-                f'line {node.lineno}, rewriting'
+                f'line {node.lineno}, rewriting',
             )
             self.has_changed = True
             node = self._get_suppress_block(node)
@@ -1135,10 +1134,9 @@ class TryExceptTransformer(ast.NodeTransformer):
     def run(self):
         result = self.visit(self.tree)
         if self.has_changed:
-            self.tree.body = (
-                [ast.Import([ast.alias('contextlib')])]
-                + self.tree.body
-            )
+            self.tree.body = [
+                ast.Import([ast.alias('contextlib')])
+            ] + self.tree.body
         return ast.fix_missing_locations(result)
 </code></pre>
 
