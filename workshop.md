@@ -1491,15 +1491,14 @@ def _is_in_scope(self, definition_scope: str) -> bool:
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-16|2-9|11-12|14-16" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-15|2-8|10-11|13-15" data-fragment-index="0">
 def get_in_scope_import(self, name: str) -> dict | None:
     scoped_imports = [
         import_info
         for import_info in self.imports_available
         if self._is_in_scope(import_info['scope'])
-        and name == (
-            import_info['alias'] or import_info['import']
-        )
+        and name
+        == (import_info['alias'] or import_info['import'])
     ]
 
     if not scoped_imports:
