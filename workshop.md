@@ -1145,12 +1145,13 @@ class TryExceptTransformer(ast.NodeTransformer):
 
 We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, like the loss of comments and formatting:
 
-```pycon [highlight-lines="1-5|6|7-11"][class="hide-line-numbers"]
+```pycon [highlight-lines="1-6|7|8-12"][class="hide-line-numbers"]
 >>> from pathlib import Path
 >>>
 >>> source_code = Path('snippets/try_except.py').read_text()
 >>> transformer = TryExceptTransformer(source_code)
 >>> updated_ast = transformer.run()
+Detected a try/except/pass block on line 2, rewriting
 >>> print(ast.unparse(updated_ast))
 import contextlib
 
