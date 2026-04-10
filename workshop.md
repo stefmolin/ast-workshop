@@ -555,7 +555,7 @@ The `ast.unparse()` function comes with some caveats:
 
 <ul>
     <li class="fragment">It's not recommended with larger trees since it can hit recursion limits.</li>
-    <li class="fragment">If we first convert source code to an AST, and then attempt to convert it back without an changes, the result will be <em>equivalent, but not necessarily equal</em> to the original.</li>
+    <li class="fragment">If we first convert source code to an AST, and then attempt to convert it back without any changes, the result will be <em>equivalent, but not necessarily equal</em> to the original.</li>
 </ul>
 
 ---
