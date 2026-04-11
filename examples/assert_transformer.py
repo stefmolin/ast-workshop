@@ -6,8 +6,7 @@ class AssertTransformer(ast.NodeTransformer):
         if not node.msg:
             node.msg = ast.Constant('TODO: Add failure info')
             ast.fix_missing_locations(node)
-        self.generic_visit(node)
-        return node
+        return self.generic_visit(node)
 
 
 if __name__ == '__main__':
