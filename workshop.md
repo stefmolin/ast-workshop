@@ -437,7 +437,7 @@ We can use the `ast.iter_fields()` function to iterate over all fields that a no
 
 If we look at this for the `ast.FunctionDef` in the `body` of the `ast.Module`, we have more information:
 
-```pycon
+```pycon [highlight-lines="1|2|3-9|4-6"][class="hide-line-numbers"]
 >>> func_def = tree.body[0]
 >>> print(list(ast.iter_fields(func_def)))
 [('name', 'duplicate_list'),
@@ -540,7 +540,9 @@ AssertionError: TODO: Add failure info
 
 ##### Can we convert this back into source code to save it?
 
-With a small example like this, we can also use the `ast.unparse()` function to convert the modified AST back into Python source code:
+<div class="fragment">
+
+<p>With a small example like this, we can also use the <code>ast.unparse()</code> function to convert the modified AST back into Python source code:</p>
 
 ```pycon [highlight-lines="1|2-4|3"][class="hide-line-numbers"]
 >>> print(ast.unparse(tree))
@@ -548,6 +550,7 @@ def duplicate_list(x):
     assert isinstance(x, list), 'TODO: Add failure info'
     return x + x
 ```
+</div>
 
 ---
 
@@ -667,13 +670,16 @@ Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse
     If there isn't a docstring on a node that can have one, we report it:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
+    We use <code>getattr()</code> here because <code>ast.Module</code> nodes don't have names:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
     The module, <code>Greeter</code> class, and the <code>Greeter</code> class's methods lack docstrings:
   </p>
 </div>
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-3,5|6-9|2,7|8-9|10-13" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-3,5|6-9|2,7|8-9|9|10-13" data-fragment-index="0">
 >>> import ast
 >>> import contextlib
 >>> from pathlib import Path
@@ -738,7 +744,7 @@ def strip_password(x: dict[str, str]) -> None:
 
 ---
 
-We need to visit each `ast.Try` node and inspect its `handlers` &ndash; if there is only one handler and its `body` is an `ast.Pass` node then we will report it:
+We need to visit each `ast.Try` node and inspect its `handlers` &ndash; if there is only one handler and its `body` ends with an `ast.Pass` node then we will report it:
 
 ```python [highlight-lines="1-12|4|5-12|6-8"][class="hide-line-numbers"]
 import ast
@@ -866,7 +872,7 @@ try/except/pass block on line 5, use contextlib.suppress
 [id=exercise-3]
 ### Exercise 3
 
-Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptionHandler` nodes. You can test it using the source code in the `generic_exception.py` snippet:
+Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptionHandler` nodes. You can test it using the source code in the `generic_exception.py` snippet, which has multiple variations of what we want to detect.
 
 ```python
 try:
@@ -1027,7 +1033,7 @@ The `ast.NodeTransformer` performs the traversal in the same way that the `ast.N
 
 ---
 
-Circling back to our `try`/`except`/`pass` detector, we can create a `ast.NodeTransformer` to rewrite that code to use `contextlib.suppress()` instead of just suggesting it:
+Circling back to our `try`/`except`/`pass` detector, we can create an `ast.NodeTransformer` to rewrite that code to use `contextlib.suppress()` instead of just suggesting it:
 
 <div class="fragment semi-fade-out" data-fragment-index="0">
 
@@ -1042,6 +1048,8 @@ def strip_password(x: dict[str, str]) -> None:
 </div>
 
 <div class="fragment fade-in-then-semi-out" data-fragment-index="0">
+
+<p class="center" style="font-size: 1em; margin-top: -0.25em; margin-bottom: -0.25em;">&darr;</p>
 
 ```python
 import contextlib
@@ -1066,52 +1074,55 @@ def strip_password(x: dict[str, str]) -> None:
     <code>has_changed</code> indicates whether we need to add an import for <code>contextlib</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
-    <code>_get_suppress_block()</code> will take a <code>ast.Try</code> node and convert it:
+    <code>_get_suppress_block()</code> will take an <code>ast.Try</code> node and convert it:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
     Rather than write the AST directly, we will write source code, parse it, then edit it:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="4">
-    We <code>suppress()</code> the type of exception that was in the <code>except</code>:
+    The <code>ast.With</code> node we need is stored in the <code>body</code> of an <code>ast.Module</code> node:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="5">
-    The body of the <code>with</code> block will be the code that was in the body of the <code>try</code>:
+    We <code>suppress()</code> the exception from the <code>except</code> (when it's not a bare <code>except</code>):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="6">
-    Finally, we return this new node so that we can update the AST:
+    The body of the <code>with</code> block will be the code that was in the body of the <code>try</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="7">
-    The <code>ast.NodeTransformer</code> will call our <code>visit_Try()</code> method during traversal:
+    Finally, we return this new node so that we can update the AST:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="8">
-    If it finds a <code>try</code> block to rewrite, it will report it and start the AST update:
+    The <code>ast.NodeTransformer</code> will call our <code>visit_Try()</code> method during traversal:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="9">
-    We track the change and call <code>_get_suppress_block()</code> to get the new node:
+    If it finds a <code>try</code> block to rewrite, it will report it and start the AST update:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="10">
-    We still need to traverse the tree further in case there are any nested blocks:
+    We call <code>_get_suppress_block()</code> to get the new node and track the change:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="11">
-    By returning the new node, the <code>try</code> block is replaced by the new <code>with</code> block:
+    We still need to traverse the tree further in case there are any nested blocks:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="12">
-    Again, we create a <code>run()</code> method as the entrypoint:
+    By returning the new node, the <code>try</code> block is replaced by the new <code>with</code> block:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="13">
-    We start by calling <code>visit()</code> to traverse the entire AST:
+    Again, we create a <code>run()</code> method as the entrypoint:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="14">
-    If any edits were made, we will add <code>import contextlib</code> to the top of the module:
+    We start by calling <code>visit()</code> to traverse the entire AST:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="15">
+    If any edits were made, we will add <code>import contextlib</code> to the top of the module:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="16">
     We return the modified AST with all the location information required to compile:
   </p>
 </div>
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-20|10-15|16-18|19|20|22-33|23-31|30-31|32|33|35-41|36|37-40|41" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-35|25-33|32-33|34|35|37-43|38|39-42|43" data-fragment-index="0">
 import ast
 from textwrap import dedent
 
@@ -1123,14 +1134,16 @@ class TryExceptTransformer(ast.NodeTransformer):
 
     def _get_suppress_block(self, node):
         suppress_example = dedent("""
-        with contextlib.suppress(KeyError):
-            del x['password']
+        with contextlib.suppress(Exception):
+            pass
         """)
         with_block = ast.parse(suppress_example).body[0]
-        with_block.items[0].context_expr.args = [
-            node.handlers[0].type or ast.Name('Exception')
-        ]
+
+        if exc_type := node.handlers[0].type:
+            with_block.items[0].context_expr.args = [exc_type]
+
         with_block.body = node.body
+
         return with_block
 
     def visit_Try(self, node):
@@ -1141,18 +1154,18 @@ class TryExceptTransformer(ast.NodeTransformer):
                 'Detected a try/except/pass block on',
                 f'line {node.lineno}, rewriting',
             )
-            self.has_changed = True
             node = self._get_suppress_block(node)
+            self.has_changed = True
         self.generic_visit(node)
         return node
 
     def run(self):
-        result = self.visit(self.tree)
+        self.tree = self.visit(self.tree)
         if self.has_changed:
             self.tree.body = [
                 ast.Import([ast.alias('contextlib')])
             ] + self.tree.body
-        return ast.fix_missing_locations(result)
+        return ast.fix_missing_locations(self.tree)
 </code></pre>
 
 <div class="center">
@@ -1193,7 +1206,7 @@ Create an `ast.NodeTransformer` to add placeholder messages to all `assert` call
 [id=example-solution-4]
 ### Example solution
 
-```python
+```python [highlight-lines="1-9|4|5|6-8|9"][class="hide-line-numbers"]
 import ast
 
 
@@ -1202,12 +1215,11 @@ class AssertTransformer(ast.NodeTransformer):
         if not node.msg:
             node.msg = ast.Constant('TODO: Add failure info')
             ast.fix_missing_locations(node)
-        self.generic_visit(node)
-        return node
+        return self.generic_visit(node)
 ```
 
 <div class="center">
-    <small><em><code>examples/assert_visitor.py</code></em></small>
+    <small><em><code>examples/assert_transformer.py</code></em></small>
 </div>
 
 ---
@@ -1463,7 +1475,7 @@ Now the `ImportVisitor` includes the scope in which each of the imports can be u
 
 #### What's currently in scope?
 
-As we explore the AST, we need to be able to determine both which imports and which names (*e.g.*, variables, function definitions) are in scope. An import is in the current scope if its scope matches the current scope or is a prefix of it.
+As we explore the AST, we need to be able to determine both which imports and which names (*e.g.*, variables, function definitions) are in scope. An import is in the current scope if its scope matches the current scope or is a prefix of it:
 
 |import scope|current scope|is in scope?|
 |---|---|---|---|
@@ -1509,16 +1521,19 @@ def _is_in_scope(self, definition_scope: str) -> bool:
     First, we grab all imports of <code>name</code> that are in scope:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
-    If nothing is in scope, we return <code>None</code>:
+    For aliased imports, we only compare <code>name</code> to that alias:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
+    If nothing is in scope, we return <code>None</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
     Otherwise, we take the narrowest scope (more dots, means deeper in the stack):
   </p>
 </div>
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-15|2-8|10-11|13-15" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-15|2-8|6-7|10-11|13-15" data-fragment-index="0">
 def get_in_scope_import(self, name: str) -> dict | None:
     scoped_imports = [
         import_info
@@ -1540,7 +1555,7 @@ def get_in_scope_import(self, name: str) -> dict | None:
 
 ### Tracking name definitions
 
-As alluded to before, in order to see if an import is missing, we also need to track all the names used and the scopes in which they were defined. Imports, class definitions, function definitions, function arguments, and variable assignments are all names. Think about what happens if you try to run `ast.parse()` without first running `import ast` &ndash; you get a `NameError`:
+As alluded to before, in order to see if an import is missing, we also need to track all the names used and the scopes in which they were defined. Imports, class definitions, function definitions, function arguments, and variable are all names. Think about what happens if you try to run `ast.parse()` without first running `import ast` &ndash; you get a `NameError`:
 
 ```pycon
 >>> ast.parse('x = 1')
@@ -1553,7 +1568,7 @@ NameError: name 'ast' is not defined. Did you forget to import 'ast'?
 
 ---
 
-We will use a `defaultdict` to track names, where the key is the name we find in the source code we are processing, and the value is a list of dictionaries that each contain the scope upon declaration, the type of name it is (*e.g.*, builtin, import, *etc.*), and the line number (if not a builtin):
+We will use a `defaultdict` to track names, where the key is the name we find in the source code we are processing, and the value is a list of dictionaries that each contain the scope upon declaration, the type of name it is (*e.g.*, builtin, import, *etc.*), and the line number (if not a builtin, like `dict`, `sum`, or `KeyError`):
 
 ```python [highlight-lines="2,3|12-21"][class="hide-line-numbers"]
 import ast
@@ -1589,13 +1604,17 @@ class ImportVisitor(ast.NodeVisitor):
 [id=exercise-6]
 ### Exercise 6
 
-Starting from `checkpoints/exercise_6.py`, update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variable assignments (`ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context on `ast.Name` nodes to keep things simple.
+Starting from `checkpoints/exercise_6.py`, update the `ImportVisitor` to include name tracking for imports (`ast.Import` and `ast.ImportFrom`), class definitions (`ast.ClassDef`), function definitions (`ast.FunctionDef` and `ast.AsyncFunctionDef`), function arguments (`ast.arg`), and variables (visit assignments by visiting `ast.Name` when `ctx` is of type `ast.Store`). Note that we will be ignoring the `ast.Del` context on `ast.Name` nodes to keep things simple.
 
 **Bonus**: If you have time, print out a warning whenever a name is redefined within a given scope, for example:
 
-```python
-# this masks the builtin dict()
-dict = {}
+```pycon [highlight-lines="1,2,6"][class="hide-line-numbers"]
+>>> dict = {} # this masks the builtin dict()
+>>> my_dict = dict(x=1)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+    my_dict = dict(x=1)
+TypeError: 'dict' object is not callable
 ```
 
 ---
@@ -1644,7 +1663,7 @@ dict = {}
     For it to be a redefinition, we need at least two occurrences of the name:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="12">
-    If there is indeed a redefinition, we store the latest one:
+    If there is indeed a redefinition, we store the latest one since this is depth-first:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="13">
     Every other definition that is in scope needs to be flagged as masked:
