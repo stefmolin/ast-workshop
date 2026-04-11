@@ -9,14 +9,16 @@ class TryExceptTransformer(ast.NodeTransformer):
 
     def _get_suppress_block(self, node):
         suppress_example = dedent("""
-        with contextlib.suppress(KeyError):
-            del x['password']
+        with contextlib.suppress(Exception):
+            pass
         """)
         with_block = ast.parse(suppress_example).body[0]
-        with_block.items[0].context_expr.args = [
-            node.handlers[0].type or ast.Name('Exception')
-        ]
+
+        if exc_type := node.handlers[0].type:
+            with_block.items[0].context_expr.args = [exc_type]
+
         with_block.body = node.body
+
         return with_block
 
     def visit_Try(self, node):
@@ -33,12 +35,12 @@ class TryExceptTransformer(ast.NodeTransformer):
         return node
 
     def run(self):
-        result = self.visit(self.tree)
+        self.tree = self.visit(self.tree)
         if self.has_changed:
             self.tree.body = [
                 ast.Import([ast.alias('contextlib')])
             ] + self.tree.body
-        return ast.fix_missing_locations(result)
+        return ast.fix_missing_locations(self.tree)
 
 
 if __name__ == '__main__':
