@@ -29,8 +29,8 @@ class TryExceptTransformer(ast.NodeTransformer):
                 'Detected a try/except/pass block on',
                 f'line {node.lineno}, rewriting',
             )
-            self.has_changed = True
             node = self._get_suppress_block(node)
+            self.has_changed = True
         self.generic_visit(node)
         return node
 
