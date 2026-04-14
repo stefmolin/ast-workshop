@@ -15,11 +15,11 @@ In this workshop, you’ll learn how to use the Python standard library’s `ast
 
 ## Setup Instructions
 
-1. Fork and clone this repository. If you don't have a GitHub account, you will need to create one to complete this step. Please be sure to check for changes (and sync them) before coming to the workshop.
+1. Fork and clone this repository: [github.com/stefmolin/ast-workshop](https://github.com/stefmolin/ast-workshop/). If you don't have a GitHub account, you will need to create one to complete this step. Please be sure to check for changes (and sync them) before coming to the workshop.
 
 2. Confirm that you have Python 3.10 or higher installed (3.14 is preferred), as well as a text editor for writing code.
 
-3. Open up these slides in your browser and use the arrow keys to follow along: [stefaniemolin.com/ast-workshop](https://stefaniemolin.com/ast-workshop/)
+3. Open up these slides in your browser and use the arrow keys to follow along: [stefaniemolin.com/ast-workshop](https://stefaniemolin.com/ast-workshop/).
 
 4. Open up the documentation for the `ast` module in your browser to consult during the exercises: [docs.python.org/3/library/ast.html](https://docs.python.org/3/library/ast.html).
 
