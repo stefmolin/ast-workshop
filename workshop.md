@@ -1366,7 +1366,7 @@ Our `ImportVisitor` finds each of the imports:
 
 ### Tracking import scope
 
-In order to flag missing names and unused imports, we need to know which imports are available to us. However, right now, we don't have the full story &ndash; we need to account for their scope. For example, the import of `json` on line 2, is only available with the scope of the `get_data()` function, which is narrower than the module scope, in which we call `json.dump()` on line 8:
+In order to flag missing names and unused imports, we need to know which imports are available to us. However, right now, we don't have the full story &ndash; we need to account for their scope. For example, the import of `json` on line 2, is only available within the scope of the `get_data()` function, which is narrower than the module scope, in which we call `json.dump()` on line 8:
 
 ```python [highlight-lines="1-8"]
 def get_data():
@@ -1480,9 +1480,9 @@ Now the `ImportVisitor` includes the scope in which each of the imports can be u
 
 #### What's currently in scope?
 
-As we explore the AST, we need to be able to determine both which imports and which names (*e.g.*, variables, function definitions) are in scope. An import is in the current scope if its scope matches the current scope or is a prefix of it:
+As we explore the AST, we need to be able to determine which names (*e.g.*, imports, variables, function definitions) are in scope. A name is in scope if its definition scope matches the current scope or is a prefix of it:
 
-|import scope|current scope|is in scope?|
+|definition scope|current scope|is in scope?|
 |---|---|---|---|
 | `module` | `module` | True |
 | `module` | `module.function` | True |
@@ -1820,7 +1820,7 @@ We are now ready to detect missing name definitions and unused imports. Missing 
     If not, we report that the name is missing:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="6">
-    We also grab the narrowest scope of that import (<code>None</code>, if it's not an import):
+    Otherwise, we grab the narrowest scope of that import (<code>None</code>, if it's not an import):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="7">
     If there is an in-scope import, we increment the number of times it was accessed:
