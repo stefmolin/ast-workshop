@@ -1703,7 +1703,7 @@ class ImportVisitor(ast.NodeVisitor):
             if self._is_in_scope(older_def['scope']):
                 other_line_number = (
                     f' on line {older_def["line_number"]}'
-                    if older_def['line_number'] is None
+                    if older_def['line_number'] is not None
                     else ''
                 )  # empty for builtins only
                 print(
