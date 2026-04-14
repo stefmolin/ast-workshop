@@ -313,7 +313,7 @@ Module(
 [id=exercise-1]
 ### Exercise 1
 
-Try passing source code that has a `SyntaxError` into `ast.parse()`. What happens? What about if the code has an error unrelated to syntax, like a `NameError` or `TypeError`?
+Try passing source code that has a `SyntaxError` into the `ast.parse()` function. What happens? What about if the code has an error unrelated to syntax, for instance, a `NameError` or `TypeError`?
 
 ---
 
