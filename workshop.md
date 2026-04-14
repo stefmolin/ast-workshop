@@ -1208,16 +1208,19 @@ Create an `ast.NodeTransformer` to add placeholder messages to all `assert` call
 [id=example-solution-4]
 ### Example solution
 
-```python [highlight-lines="1-9|4|5|6-8|9"][class="hide-line-numbers"]
+```python [highlight-lines="1-12|4|5|6|8-10|12"][class="hide-line-numbers"]
 import ast
 
 
 class AssertTransformer(ast.NodeTransformer):
     def visit_Assert(self, node):
+        node = self.generic_visit(node)
+
         if not node.msg:
             node.msg = ast.Constant('TODO: Add failure info')
-            ast.fix_missing_locations(node)
-        return self.generic_visit(node)
+            node = ast.fix_missing_locations(node)
+
+        return node
 ```
 
 <div class="center">
