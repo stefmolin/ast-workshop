@@ -51,7 +51,7 @@ jobs:
       - name: Install ezslides
         run: pip install ./ezslides
       - name: Package files
-        run: ezslides -o slides/${{ secrets.PREVIEW }} content/workshop.md  # TODO: update file name here and remove PREVIEW when ready to go public
+        run: ezslides content/workshop.md
 
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d  # v6.0.0
