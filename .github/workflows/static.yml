@@ -53,6 +53,21 @@ jobs:
       - name: Package files
         run: ezslides content/workshop.md
 
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f  # v6.3.0
+      - name: Disable AppArmor # this is necessary for puppeteer to work
+        run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
+      - name: Checkout reveal-pdf-generator
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+        with:
+          repository: stefmolin/reveal-pdf-generator
+          token: ${{ secrets.SLIDES_PUBLISHING_TOKEN }}
+          path: reveal-pdf-generator
+      - name: Generate PDF version
+        run: |
+          npm --prefix ./reveal-pdf-generator install && \
+            node reveal-pdf-generator/pdf-export.mjs slides;
+
       - name: Setup Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d  # v6.0.0
       - name: Upload artifact
