@@ -1095,13 +1095,13 @@ def strip_password(x: dict[str, str]) -> None:
     The <code>ast.NodeTransformer</code> will call our <code>visit_Try()</code> method during traversal:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="9">
-    If it finds a <code>try</code> block to rewrite, it will report it and start the AST update:
+    First, we get the updates from all descendant nodes:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="10">
-    We call <code>_get_suppress_block()</code> to get the new node and track the change:
+    If we need to rewrite a <code>try</code> block, we will report it and start the AST update:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="11">
-    We still need to traverse the tree further in case there are any nested blocks:
+    We call <code>_get_suppress_block()</code> to get the new node and track the change:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="12">
     By returning the new node, the <code>try</code> block is replaced by the new <code>with</code> block:
@@ -1122,7 +1122,7 @@ def strip_password(x: dict[str, str]) -> None:
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-35|25-33|32-33|34|35|37-43|38|39-42|43" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-37|25|27-35|34-35|37|39-45|40|41-44|45" data-fragment-index="0">
 import ast
 from textwrap import dedent
 
@@ -1147,6 +1147,8 @@ class TryExceptTransformer(ast.NodeTransformer):
         return with_block
 
     def visit_Try(self, node):
+        node = self.generic_visit(node)
+
         if len(node.handlers) == 1 and isinstance(
             node.handlers[0].body[-1], ast.Pass
         ):
@@ -1156,7 +1158,7 @@ class TryExceptTransformer(ast.NodeTransformer):
             )
             node = self._get_suppress_block(node)
             self.has_changed = True
-        self.generic_visit(node)
+
         return node
 
     def run(self):
@@ -1175,7 +1177,7 @@ class TryExceptTransformer(ast.NodeTransformer):
 ---
 
 
-We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, like the loss of comments and formatting:
+We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, such as the loss of comments and formatting:
 
 ```pycon [highlight-lines="1,3-5|6|7|8-12"][class="hide-line-numbers"]
 >>> from pathlib import Path
