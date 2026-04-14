@@ -3,10 +3,13 @@ import ast
 
 class AssertTransformer(ast.NodeTransformer):
     def visit_Assert(self, node):
+        node = self.generic_visit(node)
+
         if not node.msg:
             node.msg = ast.Constant('TODO: Add failure info')
-            ast.fix_missing_locations(node)
-        return self.generic_visit(node)
+            node = ast.fix_missing_locations(node)
+
+        return node
 
 
 if __name__ == '__main__':
