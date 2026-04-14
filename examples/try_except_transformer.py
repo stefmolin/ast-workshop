@@ -22,6 +22,8 @@ class TryExceptTransformer(ast.NodeTransformer):
         return with_block
 
     def visit_Try(self, node):
+        node = self.generic_visit(node)
+
         if len(node.handlers) == 1 and isinstance(
             node.handlers[0].body[-1], ast.Pass
         ):
@@ -31,7 +33,7 @@ class TryExceptTransformer(ast.NodeTransformer):
             )
             node = self._get_suppress_block(node)
             self.has_changed = True
-        self.generic_visit(node)
+
         return node
 
     def run(self):
