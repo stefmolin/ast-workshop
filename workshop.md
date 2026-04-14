@@ -435,7 +435,7 @@ We can use the `ast.iter_fields()` function to iterate over all fields that a no
 
 ---
 
-If we look at this for the `ast.FunctionDef` in the `body` of the `ast.Module`, we have more information:
+However, if we look at this for the `ast.FunctionDef` node in the `body` of the `ast.Module` node, we have more information:
 
 ```pycon [highlight-lines="1|2|3-9|4-6"][class="hide-line-numbers"]
 >>> func_def = tree.body[0]
@@ -557,7 +557,7 @@ def duplicate_list(x):
 The `ast.unparse()` function comes with some caveats:
 
 <ul>
-    <li class="fragment">It's not recommended with larger trees since it can hit recursion limits.</li>
+    <li class="fragment">It's not recommended for larger trees since it can hit recursion limits.</li>
     <li class="fragment">If we first convert source code to an AST, and then attempt to convert it back without any changes, the result will be <em>equivalent, but not necessarily equal</em> to the original.</li>
 </ul>
 
@@ -673,7 +673,7 @@ Use the `ast.walk()` function and the `ast.get_docstring()` function to traverse
     We use <code>getattr()</code> here because <code>ast.Module</code> nodes don't have names:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="4">
-    The module, <code>Greeter</code> class, and the <code>Greeter</code> class's methods lack docstrings:
+    The module, <code>Greeter</code> class, and the <code>Greeter</code> class's methods all lack docstrings:
   </p>
 </div>
 
@@ -697,7 +697,7 @@ greet
 
 ---
 
-The `ast.walk()` function yields the nodes in no specific order, so we don't have context beyond the node itself. In the case of the previous exercise, larger files can easily make the results confusing. Furthermore, we may want to flag missing docstrings on the `__init__()` method only if the class doesn't have one. For these use cases, we need the context provided by traversing the tree in a specific order.
+The `ast.walk()` function yields the nodes in *no specific order*, so we don't have context beyond the node itself. In the case of the previous exercise, larger files can easily make the results confusing. Furthermore, we may want to flag missing docstrings on the `__init__()` method only if the class doesn't have one. For these use cases, we need the context provided by traversing the tree in a specific order.
 
 ---
 
@@ -994,7 +994,7 @@ class GenericExceptionVisitor(ast.NodeVisitor):
 
 Using the `GenericExceptionVisitor` is a little different. This time, we pass in the source code when we initialize it, and we call the `run()` method to kick off the traversal:
 
-```pycon [highlight-lines="1-7|8-25"][class="hide-line-numbers"]
+```pycon [highlight-lines="1,3-7|8-25"][class="hide-line-numbers"]
 >>> from pathlib import Path
 >>>
 >>> source_code = Path(
@@ -1026,7 +1026,7 @@ Bare except on line 25:
 
 ### `ast.NodeTransformer`
 
-The `ast.NodeTransformer` performs the traversal in the same way that the `ast.NodeVisitor` does, but it can modify the AST. So far, each of our `visit_*()` methods haven't returned anything (implicitly, they return `None`). However, with the `ast.NodeTransformer`, the return value modifies the AST:
+The `ast.NodeTransformer` performs the traversal in the same way that the `ast.NodeVisitor` does, but it can modify the AST. So far, our `visit_*()` methods haven't returned anything (implicitly, they all returned `None`). However, with the `ast.NodeTransformer`, the return value modifies the AST:
 
 - Returning `None` deletes the subtree rooted at that node (*i.e.*, that node and all of its descendants)
 - Returning `transformed_node` replaces the subtree rooted at the visited node with `transformed_node` (or keeps it if it wasn't modified)
@@ -1177,7 +1177,7 @@ class TryExceptTransformer(ast.NodeTransformer):
 
 We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, like the loss of comments and formatting:
 
-```pycon [highlight-lines="1-5|6|7|8-12"][class="hide-line-numbers"]
+```pycon [highlight-lines="1,3-5|6|7|8-12"][class="hide-line-numbers"]
 >>> from pathlib import Path
 >>>
 >>> source_code = Path('snippets/try_except.py').read_text()
