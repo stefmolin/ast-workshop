@@ -313,7 +313,8 @@ Module(
 [id=exercise-1]
 ### Exercise 1
 
-Try passing source code that has a `SyntaxError` into the `ast.parse()` function. What happens? What about if the code has an error unrelated to syntax, for instance, a `NameError` or `TypeError`?
+1. Try passing source code that has a `SyntaxError` into the `ast.parse()` function. What happens?
+2. What about if the code has an error unrelated to syntax, for instance, a `NameError` or `TypeError`?
 
 ---
 
@@ -322,7 +323,7 @@ Try passing source code that has a `SyntaxError` into the `ast.parse()` function
 
 ---
 
-#### Syntactically-incorrect source code
+#### 1. Syntactically-incorrect source code
 
 Let's use the following malformed `import` statement as an example of **invalid source code**:
 
@@ -357,7 +358,7 @@ SyntaxError: Did you mean to use 'from ... import ...' instead?
 
 ---
 
-#### Syntactically-correct source code with logic errors
+#### 2. Syntactically-correct source code with logic errors
 
 The following code raises a `NameError` at runtime:
 
@@ -464,13 +465,19 @@ The `ast.iter_fields()` function is helpful when figuring out how to work with i
 
 ---
 
-To traverse the entire tree, we need the recursive behavior provided in the `ast.walk()` function or the `ast.NodeVisitor`/`ast.NodeTransformer` classes. Each of these builds upon the `ast.iter_fields()` and `ast.iter_child_nodes()` functions we just looked at. Let's start with the `ast.walk()` function.
+To traverse the entire tree, we need the recursive behavior provided in the `ast.walk()` function or the `ast.NodeVisitor`/`ast.NodeTransformer` classes.
+
+<p class="fragment">Each of these builds upon the functions we just looked at (<code>ast.iter_fields()</code> and <code>ast.iter_child_nodes()</code>).<p>
+
+<p class="fragment">Let's start with the <code>ast.walk()</code> function.<p>
 
 ---
 
 #### `ast.walk()`
 
-The `ast.walk()` function recursively yields all descendant nodes in the AST. Let's use it to make sure all `assert` calls provide a message when the `assert` is false and an `AssertionError` is raised. For those unfamiliar with the syntax, here's a comparison using the contents of the `assert.py` snippet:
+The `ast.walk()` function recursively yields all descendant nodes in the AST. Let's use it to make sure all `assert` calls provide a message when the `assert` is false and an `AssertionError` is raised.
+
+For those unfamiliar with the syntax, here's a comparison using the contents of the `assert.py` snippet:
 
 ```python
 # without custom message
@@ -499,7 +506,7 @@ def duplicate_list(x):
     We set the <code>msg</code> to a placeholder value, so it's easy to find in the logs:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
-    All nodes to must have line numbers in order to compile the AST into a <code>code</code> object:
+    All nodes must have line numbers in order to compile the AST into a <code>code</code> object:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
     The <code>compile()</code> function turns our modified AST into a <code>code</code> object:
@@ -563,7 +570,7 @@ The `ast.unparse()` function comes with some caveats:
 
 ---
 
-One way that the round-trip could result in equivalent, but different source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they have no effect on the logic of the program. For example, consider this code, which has both:
+One way that the round-trip could result in equivalent, but different, source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they have no effect on the logic of the program. For example, consider this code, which has both:
 
 ```python
 import contextlib
@@ -767,7 +774,7 @@ class TryExceptVisitor(ast.NodeVisitor):
 
 ---
 
-To use our visitor, we instantiate it and call its `visit()` method, passing in the AST, to start the traversal:
+To use our visitor, we instantiate it and call its `visit()` method, passing in the AST to start the traversal:
 
 ```pycon [highlight-lines="1-7|5|6|7"][class="hide-line-numbers"]
 >>> from pathlib import Path
