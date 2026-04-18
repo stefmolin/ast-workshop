@@ -1114,7 +1114,7 @@ def strip_password(x: dict[str, str]) -> None:
     By returning the new node, the <code>try</code> block is replaced by the new <code>with</code> block:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="13">
-    Again, we create a <code>run()</code> method as the entrypoint:
+    Again, we create a <code>run()</code> method as the entry point:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="14">
     We start by calling <code>visit()</code> to traverse the entire AST:
