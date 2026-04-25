@@ -1,5 +1,6 @@
 """
 ImportVisitor starting point for exercise 7
+https://stefaniemolin.com/ast-workshop/#/exercise-7
 
 The `if __name__ == '__main__'` section below will run the traversal on some sample
 source code (also defined there). You can test your changes by modifying that section
