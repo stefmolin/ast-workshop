@@ -1114,22 +1114,25 @@ def strip_password(x: dict[str, str]) -> None:
     By returning the new node, the <code>try</code> block is replaced by the new <code>with</code> block:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="13">
-    Again, we create a <code>run()</code> method as the entry point:
+    Notice that we don't have to specify the indentation level &ndash; the AST handles this:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="14">
-    We start by calling <code>visit()</code> to traverse the entire AST:
+    Finally, we create a <code>run()</code> method as the entry point:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="15">
-    If any edits were made, we will add <code>import contextlib</code> to the top of the module:
+    We start by calling <code>visit()</code> to traverse the entire AST:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="16">
+    If any edits were made, we will add <code>import contextlib</code> to the top of the module:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="17">
     We return the modified AST with all the location information required to compile:
   </p>
 </div>
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-37|25|27-35|34-35|37|39-45|40|41-44|45" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-37|25|27-35|34-35|37|24-37|39-45|40|41-44|45" data-fragment-index="0">
 import ast
 from textwrap import dedent
 
