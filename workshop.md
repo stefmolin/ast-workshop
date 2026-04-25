@@ -570,7 +570,28 @@ The `ast.unparse()` function comes with some caveats:
 
 ---
 
-One way that the round-trip could result in equivalent, but different, source code is in the presence of non-code elements like comments and stylistic formatting. These aren't part of the AST because they have no effect on the logic of the program. For example, consider this code, which has both:
+Introduced in Python 3.14, the `ast.compare()` function compares ASTs recursively. Here, we can see an example of structurally-equivalent, but stylistically-different programs:
+
+```pycon [class="hide-line-numbers"][highlight-lines=1-6|8-14]
+# check if the ASTs are equivalent
+>>> ast.compare(
+...     ast.parse('a + (b * c)'),
+...     ast.parse('a + b * c'),
+... )
+True
+
+# compare line numbers and column offsets as well
+>>> ast.compare(
+...     ast.parse('a + (b * c)'),
+...     ast.parse('a + b * c'),
+...     compare_attributes=True,
+... )
+False
+```
+
+---
+
+If we scale this example up to a slightly larger program with comments and more stylistic formatting, there will be even more differences:
 
 ```python
 import contextlib
@@ -590,7 +611,7 @@ def strip_password(
 
 ---
 
-When we parse this into an AST and back again, the code is equivalent, but different:
+When we parse this into an AST and back again (a process called round-trip parsing), the resulting code is equivalent, but different:
 
 ```python
 import contextlib
