@@ -133,6 +133,10 @@ class Greeter:
 
 ### Popular open source tools that use ASTs
 
+<p class="fragment fade-in">
+We can generate ASTs without installing the codebase being analyzed or its dependencies, which makes it a popular choice to building tools:
+</p>
+
 <ul>
   <li class="fragment fade-in">
     Linters and formatters, like <code>ruff</code> (Rust) and <code>black</code> (Python)
@@ -161,6 +165,8 @@ class Greeter:
 </ul>
 
 [notes]
+Not needing to install or import the code to inspect it also provides speed boosts, which make it a popular solution as well.
+
 Other potential use cases:
 
 - Metaprogramming
