@@ -28,13 +28,16 @@ class GenericExceptionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ExceptHandler(self, node):
-        if not (exception_type := node.type):
-            print(f'Bare except on line {node.lineno}:')
-            self._print_source_segment(node)
+        match node.type:
+            case None:
+                print(f'Bare except on line {node.lineno}:')
+                self._print_source_segment(node)
 
-        elif exception_type.id == 'Exception':
-            print(f'Generic Exception on line {node.lineno}:')
-            self._print_source_segment(node)
+            case ast.Name(id='Exception'):
+                print(
+                    f'Generic Exception on line {node.lineno}:'
+                )
+                self._print_source_segment(node)
 
         self.generic_visit(node)
 
