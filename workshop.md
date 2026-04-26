@@ -973,7 +973,7 @@ except:  # bare except
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-14|11-13|16-30|18-19|21-22|24-28|30|32-41|33-35|37-39|41|43-44" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-14|11-13|16-28|17-19,21|17-18,20-21|22-26|28|30-42|31-34|31,36-40|42|44-45" data-fragment-index="0">
 import ast
 from textwrap import dedent, indent
 
@@ -990,29 +990,30 @@ class GenericExceptionVisitor(ast.NodeVisitor):
         print(indent(dedent(code_segment), '| '), end='\n\n')
 
     def visit_Raise(self, node):
-        if (
-            isinstance(node.exc, ast.Name)
-            and node.exc.id == 'Exception'
-        ) or (
-            isinstance(node.exc, ast.Call)
-            and node.exc.func.id == 'Exception'
-        ):
-            print(
-                'Generic Exception raised on line',
-                f'{node.lineno}:',
-            )
-            self._print_source_segment(node)
+        match node.exc:
+            case (
+                ast.Name(id='Exception')
+                | ast.Call(func=ast.Name(id='Exception'))
+            ):
+                print(
+                    'Generic Exception raised on line',
+                    f'{node.lineno}:',
+                )
+                self._print_source_segment(node)
 
         self.generic_visit(node)
 
     def visit_ExceptHandler(self, node):
-        if not (exception_type := node.type):
-            print(f'Bare except on line {node.lineno}:')
-            self._print_source_segment(node)
+        match node.type:
+            case None:
+                print(f'Bare except on line {node.lineno}:')
+                self._print_source_segment(node)
 
-        elif exception_type.id == 'Exception':
-            print(f'Generic Exception on line {node.lineno}:')
-            self._print_source_segment(node)
+            case ast.Name(id='Exception'):
+                print(
+                    f'Generic Exception on line {node.lineno}:'
+                )
+                self._print_source_segment(node)
 
         self.generic_visit(node)
 
