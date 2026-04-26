@@ -1036,7 +1036,7 @@ Using the `GenericExceptionVisitor` is a little different. This time, we pass in
 ... ).read_text()
 >>> visitor = GenericExceptionVisitor(source_code)
 >>> visitor.run()
-Bare except on line 5:
+Bare except on line 4:
 | except:
 |     pass
 
@@ -1044,13 +1044,13 @@ Generic Exception on line 11:
 | except Exception:
 |     pass
 
-Generic Exception raised on line 16:
+Generic Exception raised on line 17:
 | raise Exception('Improper input format')
 
-Generic Exception raised on line 20:
+Generic Exception raised on line 22:
 | raise Exception
 
-Bare except on line 25:
+Bare except on line 28:
 | except:
 |     print('Shame on you!')
 |     raise
