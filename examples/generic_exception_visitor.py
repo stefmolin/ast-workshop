@@ -14,18 +14,16 @@ class GenericExceptionVisitor(ast.NodeVisitor):
         print(indent(dedent(code_segment), '| '), end='\n\n')
 
     def visit_Raise(self, node):
-        if (
-            isinstance(node.exc, ast.Name)
-            and node.exc.id == 'Exception'
-        ) or (
-            isinstance(node.exc, ast.Call)
-            and node.exc.func.id == 'Exception'
-        ):
-            print(
-                'Generic Exception raised on line',
-                f'{node.lineno}:',
-            )
-            self._print_source_segment(node)
+        match node.exc:
+            case (
+                ast.Name(id='Exception')
+                | ast.Call(func=ast.Name(id='Exception'))
+            ):
+                print(
+                    'Generic Exception raised on line',
+                    f'{node.lineno}:',
+                )
+                self._print_source_segment(node)
 
         self.generic_visit(node)
 
