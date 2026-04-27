@@ -1973,7 +1973,7 @@ Here are some things you could try building for additional practice:
 [id=related-content]
 ## Related content
 
-My PyCon Lithuania 2025 keynote "[Build Your Own (Simple) Static Code Analyzer](https://stefaniemolin.com/talks/#build-your-own-(simple)-static-code-analyzer)" is another introduction to using the AST, but focuses on generating docstrings from type annotations and signatures.
+My PyCon Lithuania 2025 keynote "[Build Your Own (Simple) Static Code Analyzer](https://stefaniemolin.com/talks/#build-your-own-(simple)-static-code-analyzer)" is another introduction to using ASTs, but it focuses on generating docstrings from type annotations and signatures.
 
 - [Slides](https://stefaniemolin.com/build-your-own-simple-static-code-analyzer-talk/#/)
 - [Recording](https://www.youtube.com/watch?v=mBKs4rxDufs)
