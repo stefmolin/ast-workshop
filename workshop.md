@@ -1667,61 +1667,40 @@ TypeError: 'dict' object is not callable
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    Let's update our <code>ImportVisitor</code> to track names and report name masking:
+    Let's update our <code>ImportVisitor</code> to track names:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     The <code>_track_name_definition()</code> method updates <code>names_defined</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
-    And will make a call to <code>_flag_if_masked()</code> each time (we will come back to this):
-  </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="2">
     We are already processing imports, but we need to track the names now:
   </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="3">
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
     If the import was aliased, that will be the name, otherwise it is the import name:
   </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="4">
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
     Here, we track names from variable assignments (note the <code>ast.Store</code> context):
   </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="5">
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
     Rather than writing several similar <code>visit_*()</code> methods, we override <code>visit()</code>:
   </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="6">
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
     This replaces the <code>visit_Import()</code> and <code>visit_ImportFrom()</code> methods:
   </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="7">
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
     Here, we handle class and function declarations, as well as function arguments:
   </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="8">
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
     The only difference is how we extract the name itself:
   </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="9">
+  <p class="fragment fade-in-then-out" data-fragment-index="8">
     For all other nodes, we preserve the superclass's behavior:
-  </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="10">
-    Now, coming back to flagging masked names upon redefinition:
-  </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="11">
-    For it to be a redefinition, we need at least two occurrences of the name:
-  </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="12">
-    If there is indeed a redefinition, we store the latest one since this is depth-first:
-  </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="13">
-    Every other definition that is in scope needs to be flagged as masked:
-  </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="14">
-    Builtins aren't explicitly defined so we don't have a line number:
-  </p>
-  <p class="fragment fade-in-then-out" data-fragment-index="15">
-    Print the warning, <em>e.g.</em>, builtin dict is masked by Name of the same name on line 1:
   </p>
 </div>
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-92|30-38|38|40-58|54-57|60-63|73-91|74-75|76-89|85-87|90-91|9-28|10-11|13|15-28|18-22|23-28" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-70|9-16|18-36|32-35|38-41|51-69|52-53|54-67|63-65|68-69" data-fragment-index="0">
 import ast
 import builtins
 from collections import defaultdict
@@ -1729,27 +1708,6 @@ from collections import defaultdict
 
 class ImportVisitor(ast.NodeVisitor):
     ...
-
-    def _flag_if_masked(self, name):
-        if len(definitions := self.names_defined[name]) < 2:
-            return
-
-        latest_def = definitions[-1]
-
-        # mark all others still in scope as masked
-        for older_def in definitions[:-1]:
-            if self._is_in_scope(older_def['scope']):
-                other_line_number = (
-                    f' on line {older_def["line_number"]}'
-                    if older_def['line_number'] is not None
-                    else ''
-                )  # empty for builtins only
-                print(
-                    f'{older_def["type"]} {name}{older_line}',
-                    f'is masked by the {latest_def["type"]}',
-                    'of the same name',
-                    f'on line {latest_def["line_number"]}',
-                )
 
     def _track_name_definition(self, node, name):
         self.names_defined[name].append(
@@ -1759,7 +1717,6 @@ class ImportVisitor(ast.NodeVisitor):
                 'line_number': node.lineno,
             }
         )
-        self._flag_if_masked(name)
 
     def _visit_import(self, node):
         import_scope = '.'.join(self.stack)
