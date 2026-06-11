@@ -1160,7 +1160,7 @@ def strip_password(x: dict[str, str]) -> None:
 
 <div>
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-37|25|27-35|34-35|37|24-37|39-45|40|41-44|45" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-37|25|27-35|34-35|37|24-37|39-46|40|41-45|46" data-fragment-index="0">
 import ast
 from textwrap import dedent
 
@@ -1203,8 +1203,9 @@ class TryExceptTransformer(ast.NodeTransformer):
         self.tree = self.visit(self.tree)
         if self.has_changed:
             self.tree.body = [
-                ast.Import([ast.alias('contextlib')])
-            ] + self.tree.body
+                ast.Import([ast.alias('contextlib')]),
+                *self.tree.body,
+            ]
         return ast.fix_missing_locations(self.tree)
 </code></pre>
 
