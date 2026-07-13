@@ -1,4 +1,7 @@
-"""The initial state of the ImportVisitor after it is first introduced."""
+"""
+The initial state of the ImportVisitor after it is first
+introduced.
+"""
 
 import ast
 

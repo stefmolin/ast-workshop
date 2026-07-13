@@ -2,9 +2,12 @@
 ImportVisitor starting point for exercise 6
 https://stefaniemolin.com/ast-workshop/#/exercise-6
 
-The `if __name__ == '__main__'` section below will run the traversal on some sample
-source code (also defined there). You can test your changes by modifying that section
-to include some checks of your changes and then running this script.
+Using the `ast-explore` tool may help you get started.
+
+The `if __name__ == '__main__'` section below will run the
+traversal on some sample source code (also defined there). You
+can test your changes by modifying that section to include some
+checks of your changes and then running this script.
 """
 
 import ast
