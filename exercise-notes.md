@@ -2,15 +2,15 @@
 
 Total duration: 90 minutes
 
-|exercise|duration|solo work|walkthrough|
-|---|---|:---:|:---:|
-|1|5 minutes|x||
-|2|7 minutes|x||
-|3|15 minutes|x|x|
-|4|8 minutes|x|x|
-|5|15 minutes|x|x|
-|6|20 minutes|x|x|
-|7|20 minutes|x|x|
+| exercise | duration   | solo work | walkthrough |
+| -------- | ---------- | :-------: | :---------: |
+| 1        | 5 minutes  |     x     |             |
+| 2        | 7 minutes  |     x     |             |
+| 3        | 15 minutes |     x     |      x      |
+| 4        | 8 minutes  |     x     |      x      |
+| 5        | 15 minutes |     x     |      x      |
+| 6        | 20 minutes |     x     |      x      |
+| 7        | 20 minutes |     x     |      x      |
 
 **Bonus for advanced groups or longer sessions**: Give attendees time to work on some of the potential next steps for the `ImportVisitor`, and share what they did with the group afterwards.
 
@@ -32,7 +32,7 @@ This is essentially pair-programming with the facilitator instead of another att
 2. Show the test snippet and open up the starter file (in the `checkpoints/` directory)
 3. Ask how we should start to create the skeleton (class definition and method stubs)
 4. Remind people of the `ast-explore` tool and potentially run it with them (for example to start off exercise 3)
-5. Given people a few minutes to work on the first method
+5. Give people a few minutes to work on the first method
 6. Source some ideas to fill out that part
 7. Poll and update the stub with the definition
 8. Repeat until all code is done
