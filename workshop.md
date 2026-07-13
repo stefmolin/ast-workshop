@@ -741,7 +741,7 @@ The `ast.walk()` function yields the nodes in *no specific order*, so we don't h
 The `ast` module provides two classes that perform depth-first traversal of an AST:
 
 <ul>
-    <li class="fragment"><code>ast.NodeVisitor</code>: visits nodes in an AST</li>
+    <li class="fragment"><code>ast.NodeVisitor</code>: visits nodes in an AST (this is how <code>ast-explore</code> works)</li>
     <li class="fragment"><code>ast.NodeTransformer</code>: special version of the above that can also modify nodes</li>
 </ul>
 
