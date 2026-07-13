@@ -1222,7 +1222,6 @@ class TryExceptTransformer(ast.NodeTransformer):
 
 ---
 
-
 We can use the `TryExceptTransformer` on the `try_except.py` snippet to generate the modified AST. Remember that using `ast.unparse()` may result in other changes to the code, such as the loss of comments and formatting:
 
 ```pycon [highlight-lines="1,3-5|6|7|8-12"][class="hide-line-numbers"]
@@ -1619,7 +1618,7 @@ NameError: name 'ast' is not defined. Did you forget to import 'ast'?
 
 ---
 
-We will use a `defaultdict` to track names, where the key is the name we find in the source code we are processing, and the value is a list of dictionaries that each contain the scope upon declaration, the type of name it is (*e.g.*, builtin, import, *etc.*), and the line number (if not a builtin, like `dict`, `sum`, or `KeyError`):
+We will use a `defaultdict` to track names, where the key is the name we find in the source code we are processing, and the value is a list of dictionaries that each contain the scope upon declaration, the type of name it is (*e.g.*, builtin, import, *etc.*), and the line number (if not a builtin like `dict`, `sum`, or `KeyError`):
 
 ```python [highlight-lines="2,3|12-21"][class="hide-line-numbers"]
 import ast
