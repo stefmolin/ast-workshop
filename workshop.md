@@ -906,7 +906,7 @@ try/except/pass block on line 5, use contextlib.suppress
 [id=exercise-3]
 ### Exercise 3
 
-Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptionHandler` nodes. You can test it using the source code in the `generic_exception.py` snippet, which has multiple variations of what we want to detect.
+Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptHandler` nodes. You can test it using the source code in the `generic_exception.py` snippet, which has multiple variations of what we want to detect.
 
 ```python
 try:
