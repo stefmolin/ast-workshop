@@ -99,10 +99,12 @@ if __name__ == '__main__':
     print('Found the following imports:')
     pprint.pprint(visitor.imports_available)
 
-    # TIP: add dummy stack for testing now that imports are processed
+    # TIP: add dummy stack for testing now that imports are
+    # processed
     # visitor.stack = ['module', 'strip_password_three']
 
-    # you can change the value you pass in here to test the result based on your stack
+    # you can change the value you pass in here to test the
+    # result based on your stack
     # print(visitor.get_in_scope_import('contextlib'))
 
     # same thing here
