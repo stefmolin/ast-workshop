@@ -1158,7 +1158,6 @@ def strip_password(x: dict[str, str]) -> None:
   </p>
 </div>
 
-<div>
 <pre>
     <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-2|5|6-8|10-22|11-15|15|12,17-18|13,20|22|24-37|25|27-35|34-35|37|24-37|39-46|40|41-45|46" data-fragment-index="0">
 import ast
@@ -1210,7 +1209,7 @@ class TryExceptTransformer(ast.NodeTransformer):
 </code></pre>
 
 <div class="center">
-    <small><em><code>examples/try_except_transformer.py</code></em></small>
+  <small><em><code>examples/try_except_transformer.py</code></em></small>
 </div>
 
 ---
