@@ -1,0 +1,23 @@
+version = 1
+revision = 3
+requires-python = ">=3.11"
+
+[[package]]
+name = "ast-explore"
+version = "0.2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/da/24884431271e480bb501cc56c0a64beb324b4ccdeead5c3a656dbae5f85a/ast_explore-0.2.1.tar.gz", hash = "sha256:0f9638ed83c046a37cf9ecc046aef4f45ea3f6eed9d5accac0d654d1fce2f6e0", size = 41138, upload-time = "2026-07-13T12:05:50.612Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9d/ff/44c5e106f224510c606d85b281ac71efb9ae29e378b30a35518b8bbc86b8/ast_explore-0.2.1-py3-none-any.whl", hash = "sha256:3879da8ef2d398d9167127af7fde249951232f83f90d52143ac1d861db4f5a40", size = 17808, upload-time = "2026-07-13T12:05:49.361Z" },
+]
+
+[[package]]
+name = "ast-workshop"
+version = "1.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "ast-explore" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "ast-explore", specifier = ">=0.2.1" }]
