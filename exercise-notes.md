@@ -31,7 +31,7 @@ This is essentially pair-programming with the facilitator instead of another att
 1. Read the prompt
 2. Show the test snippet and open up the starter file (in the `checkpoints/` directory)
 3. Ask how we should start to create the skeleton (class definition and method stubs)
-4. Remind people of the AST explainer tool in the repo
+4. Remind people of the `ast-explore` tool and potentially run it with them (for example to start off exercise 3)
 5. Given people a few minutes to work on the first method
 6. Source some ideas to fill out that part
 7. Poll and update the stub with the definition
