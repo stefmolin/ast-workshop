@@ -907,13 +907,20 @@ try/except/pass block on line 5, use contextlib.suppress
 [id=exercise-3]
 ### Exercise 3
 
-Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`. Your visitor will need to visit both `ast.Raise` and `ast.ExceptHandler` nodes. You can test it using the source code in the `generic_exception.py` snippet, which has multiple variations of what we want to detect.
+Create a `GenericExceptionVisitor` class that detects both bare `except` blocks and the usage of generic `Exceptions`:
 
 ```python
 try:
     del x['non_existent_key']
 except:  # bare except
     raise Exception('No such key')  # generic Exception
+```
+
+**Tip**: Start by exploring `ast.ExceptHandler` and `ast.Raise` nodes in the `generic_exception.py` snippet, which has multiple variations of what we want to detect:
+
+```shell
+$ ast-explore snippets/generic_exception.py --interactive \
+    --types ExceptHandler Raise
 ```
 
 **Bonus**: If you have time, use the `ast.get_source_segment()` function to print any problematic code you detect.
