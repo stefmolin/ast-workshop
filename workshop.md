@@ -317,6 +317,77 @@ Module(
 
 ---
 
+##### An alternative view with `ast-explore`
+
+We can use the `ast-explore` tool to navigate the AST on the command line and extract available information from each of the node types. This was installed from [PyPI](https://pypi.org/project/ast-explore/) when we installed the dependencies for this workshop, and we will use it throughout. Try it out with the following command:
+
+```shell
+$ ast-explore snippets/greet.py | less
+```
+<hr class="footnotes" />
+<div class="footnotes">
+  <small class="footnote">
+    <em>If you are a <code>uv</code> user, prefix the command with <code>uv run</code> (or install <code>ast-explore</code> as a tool: <code>uv tool install ast-explore</code>).</em>
+  </small>
+  <small class="footnote">
+    <em>Windows users may need to use <code>more</code> instead of <code>less</code>.</em>
+  </small>
+</div>
+
+---
+
+```plaintext
+**************************************************************
+**   1. Module (docs.python.org/.../ast.html#ast.Module)    **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module
+
+📍 This node type does not have any line number information.
+
+📝 Docstring is missing.
+
+✨ AST node-specific fields and their values:
+   - body         : [ClassDef(name...ype_params=[])]
+   - type_ignores : []
+
+**************************************************************
+** 2. ClassDef (docs.python.org/.../ast.html#ast.ClassDef)  **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> ClassDef
+
+🐍 Source code represented by the node:
+   1 | class Greeter:
+   2 |     def __init__(self, enthusiasm: int = 1) -> None:
+   3 |         self.enthusiasm = enthusiasm
+   4 |
+   5 |     def greet(self, name: str = 'World') -> str:
+   6 |         return f'Hello, {name}{"!" * self.enthusiasm}'
+
+📍 Location in the source code:
+   - lineno         : 1
+   - end_lineno     : 6
+   - col_offset     : 0
+   - end_col_offset : 54
+
+📝 Docstring is missing.
+
+✨ AST node-specific fields and their values:
+   - name           : 'Greeter'
+   - bases          : []
+   - keywords       : []
+   - body           : [FunctionDef(...), FunctionDef(...)]
+   - decorator_list : []
+   - type_params    : []
+
+... (output truncated)
+```
+
+---
+
 [id=exercise-1]
 ### Exercise 1
 
@@ -414,6 +485,18 @@ def duplicate_list(x):
   <br/>
   <small>The AST for the <code>assert.py</code> snippet with node attributes visualized with Graphviz.</small>
 </div>
+
+---
+
+#### An alternative view with `ast-explore`
+
+We can use `ast-explore` to look at only the subset of nodes we are interested in with `--types` (or exclude types we know we aren't interested in with `--skip`). There is also an interactive mode, which allows you to step through one node at a time. Try it out by running the following command:
+
+```shell
+$ ast-explore snippets/assert.py \
+    --interactive \
+    --types FunctionDef arguments arg
+```
 
 ---
 
@@ -779,7 +862,42 @@ def strip_password(x: dict[str, str]) -> None:
 
 ---
 
-We need to visit each `ast.Try` node and inspect its `handlers` &ndash; if there is only one handler and its `body` ends with an `ast.Pass` node then we will report it:
+We can use `ast-explore` to figure out which nodes to visit and what information we need from them. Here, we also use `--skip` to specify the list of node types we know we aren't interested in exploring:
+
+```shell
+$ ast-explore snippets/try_except.py \
+    --interactive \
+    --skip Module FunctionDef
+```
+
+---
+
+From the output of `ast-explore`, we see that we need to visit each `ast.Try` node and inspect its `handlers` for `ast.Pass` nodes:
+
+```plaintext [highlight-lines="1-18|8-12,16"][class="hide-line-numbers"]
+**************************************************************
+**      13. Try (docs.python.org/.../ast.html#ast.Try)      **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> FunctionDef -> Try
+
+🐍 Source code represented by the node:
+   2 |     try:
+   3 |         del x['password']
+   4 |     except KeyError:
+   5 |         pass
+
+✨ AST node-specific fields and their values:
+   - body      : [Delete(target..., ctx=Del())])]
+   - handlers  : [ExceptHandler...body=[Pass()])]
+   - orelse    : []
+   - finalbody : []
+```
+
+---
+
+Our `TryExceptVisitor` will only visit `ast.Try` nodes. If there is a single handler and its `body` ends with an `ast.Pass` node, then it will report it:
 
 ```python [highlight-lines="1-12|4|5-12|6-8"][class="hide-line-numbers"]
 import ast
@@ -1106,9 +1224,96 @@ def strip_password(x: dict[str, str]) -> None:
 
 ---
 
+Rather than write the AST directly, we will write source code, parse it, then edit it. We will need to update `Exception` if there is a more specific exception, and the contents of the `with` block currently represented by the `pass` statement:
+
+```python
+with contextlib.suppress(Exception):
+    pass
+```
+
+---
+
+We can use `ast-explore` to familiarize ourselves with the structure we need to manipulate:
+
+```shell
+$ ast-explore snippets/suppress_example.py --interactive \
+    --types With withitem Call
+```
+
+---
+
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    Once again, we will use the <code>ast</code> module along with <code>textwrap</code>:
+    Here's the abbreviated output:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    The <code>ast.With</code> node we need is stored in the <code>body</code> of an <code>ast.Module</code> node:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We will replace the contents of the <code>body</code> with the contents of the <code>try</code> block:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    The <code>items</code> attribute has all the context managers in the <code>with</code> block:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    Here's the call to create the <code>contextlib.suppress</code> context manager:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    The exception to suppress is the argument passed to <code>contextlib.suppress()</code>:
+  </p>
+</div>
+
+<pre>
+    <code data-trim class="language-plaintext hide-line-numbers" data-line-numbers="1-42|5-10|8-10,14|13|21-22,25|35-37,41" data-fragment-index="0">
+**************************************************************
+**     1. With (docs.python.org/.../ast.html#ast.With)      **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> With
+
+🐍 Source code represented by the node:
+   3 | with contextlib.suppress(Exception):
+   4 |     pass
+
+✨ AST node-specific fields and their values:
+   - items        : [withitem(cont...nal_vars=None)]
+   - body         : [Pass()]
+   - type_comment : None
+
+**************************************************************
+** 2. withitem (docs.python.org/.../ast.html#ast.withitem)  **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> With -> withitem
+
+✨ AST node-specific fields and their values:
+   - context_expr  : Call(func=Att..., keywords=[])
+   - optional_vars : None
+
+**************************************************************
+**     3. Call (docs.python.org/.../ast.html#ast.Call)      **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> With -> withitem -> Call
+
+🐍 Source code represented by the node:
+-> 3 | with contextlib.suppress(Exception):
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+✨ AST node-specific fields and their values:
+   - func     : Attribute(val...', ctx=Load())
+   - args     : [Name(id='Exce...', ctx=Load())]
+   - keywords : []
+</code></pre>
+
+---
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Let's code it up now. Once again, we will use the <code>ast</code> module along with <code>textwrap</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     We start by inheriting from <code>ast.NodeTransformer</code>:
@@ -1246,7 +1451,13 @@ def strip_password(x: dict[str, str]) -> None:
 [id=exercise-4]
 ### Exercise 4
 
-Create an `ast.NodeTransformer` to add placeholder messages to all `assert` calls that don't have them. We did this earlier with `ast.walk()`, and this will look very similar. We want to visit the `ast.Assert` nodes and check for the presence of a message (available in the `msg` attribute). Don't forget to return the node after visiting it, or it will be removed from the tree.
+Create an `ast.NodeTransformer` to add placeholder messages to all `assert` calls that don't have them. We did this earlier with `ast.walk()`, and this will look very similar. Don't forget to return the node after visiting it, or it will be removed from the tree.
+
+Reminder: We want to visit the `ast.Assert` nodes and check for the presence of a message (available in the `msg` attribute). You can review the structure of the node with `ast-explore` as follows:
+
+```shell
+$ ast-explore snippets/assert.py --types Assert
+```
 
 ---
 
@@ -1289,9 +1500,102 @@ Up until this point, we were only concerned with a node and its immediate childr
 
 ### Finding all imports
 
+Let's take a look at the `imports.py` snippet, which has one import of each case we need to handle. Notice we have module-level imports and imports inside functions:
+
+```python [highlight-lines="1-17|1|2|15"][class="hide-line-numbers"]
+import json
+from contextlib import suppress
+
+
+def strip_password(x):
+    with suppress(KeyError):
+        del x['password']
+
+
+def dump_info(x, out):
+    json.dump(strip_password(x), out)
+
+
+def analyze_something(x):
+    import pandas as pd
+
+    df = pd.DataFrame(x)
+```
+
+---
+
+The two node types we need to visit are `ast.Import` and `ast.ImportFrom`:
+
+```shell [highlight-lines="1|6-13,18-19|25-33,38-40|47-56,61-62"][class="hide-line-numbers"]
+$ ast-explore snippets/imports.py --types Import ImportFrom
+**************************************************************
+**   1. Import (docs.python.org/.../ast.html#ast.Import)    **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> Import
+
+🐍 Source code represented by the node:
+   1 | import json
+
+📍 Location in the source code:
+   - lineno         : 1
+   - end_lineno     : 1
+   - col_offset     : 0
+   - end_col_offset : 11
+
+✨ AST node-specific fields and their values:
+   - names : [alias(name='j..., asname=None)]
+
+**************************************************************
+ 2. ImportFrom (docs.python.org/.../ast.html#ast.ImportFrom)
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> ImportFrom
+
+🐍 Source code represented by the node:
+   1 | import json
+-> 2 | from contextlib import suppress
+
+📍 Location in the source code:
+   - lineno         : 2
+   - end_lineno     : 2
+   - col_offset     : 0
+   - end_col_offset : 31
+
+✨ AST node-specific fields and their values:
+   - module : 'contextlib'
+   - names  : [alias(name='s..., asname=None)]
+   - level  : 0
+
+**************************************************************
+**   3. Import (docs.python.org/.../ast.html#ast.Import)    **
+**************************************************************
+
+🌲 Path to this node from the root node of the AST:
+   Module -> FunctionDef -> Import
+
+🐍 Source code represented by the node:
+   13 | def analyze_something(x):
+   14 |     import pandas as pd
+      |     ^^^^^^^^^^^^^^^^^^^
+
+📍 Location in the source code:
+   - lineno         : 15
+   - end_lineno     : 15
+   - col_offset     : 4
+   - end_col_offset : 23
+
+✨ AST node-specific fields and their values:
+   - names : [alias(name='p..., asname='pd')]
+```
+
+---
+
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    Let's start by finding all the imports in a module with a new <code>ImportVisitor</code>:
+    The initial version of the <code>ImportVisitor</code> finds all the imports in a module:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     We start by importing <code>ast</code> and inheriting from <code>ast.NodeVisitor</code>:
@@ -1367,30 +1671,6 @@ class ImportVisitor(ast.NodeVisitor):
 <div class="center">
     <small><em><code>checkpoints/initial.py</code></em></small>
 </div>
-
----
-
-Let's try this out on the `imports.py` snippet, which has one import of each case we need to handle. Notice we have module-level imports and imports inside functions:
-
-```python [highlight-lines="1-17|1|2|15"][class="hide-line-numbers"]
-import json
-from contextlib import suppress
-
-
-def strip_password(x):
-    with suppress(KeyError):
-        del x['password']
-
-
-def dump_info(x, out):
-    json.dump(strip_password(x), out)
-
-
-def analyze_something(x):
-    import pandas as pd
-
-    df = pd.DataFrame(x)
-```
 
 ---
 
