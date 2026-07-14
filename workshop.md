@@ -2072,7 +2072,7 @@ class ImportVisitor(ast.NodeVisitor):
 We are now ready to detect missing name definitions and unused imports. Missing name definitions can be detected during the AST traversal, but unused imports will have to be checked at the end (after we have counted the number of times each import is used). Starting from `checkpoints/exercise_7.py`, make the following changes to the `ImportVisitor` to add this functionality:
 
 - Update `visit_Name()` to handle the `ast.Load` context. Here, you should flag missing name definitions.
-- Track the number of times an import is accessed (not defined), and use this information to flag unused imports after the traveral has finished.
+- Track the number of times an import is accessed (not defined), and use this information to flag unused imports after the traversal has finished.
 
 ---
 
