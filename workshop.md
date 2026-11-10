@@ -836,7 +836,7 @@ When we subclass `ast.NodeVisitor`, we create `visit_<NodeType>()` methods for e
 
 ---
 
-Suppose we want to check our code for the following `try`/`except`/`pass` anti-pattern like the following code from the `try_except.py` snippet:
+Suppose we want to check our code for the following `try`/`except`/`pass` pattern like the following code from the `try_except.py` snippet:
 
 ```python
 def strip_password(x: dict[str, str]) -> None:
@@ -934,7 +934,7 @@ try/except/pass block on line 3, use contextlib.suppress
 
 ---
 
-We aren't done yet though. The `visit_Try()` method is currently cutting off the traversal to descendants of `ast.Try` nodes, meaning our visitor never visits nested `try` blocks (only the outermost one). Consider this example of nested `try` blocks from the `try_except_nested.py` snippet, where we want to detect the anti-pattern in the inner `try`:
+We aren't done yet though. The `visit_Try()` method is currently cutting off the traversal to descendants of `ast.Try` nodes, meaning our visitor never visits nested `try` blocks (only the outermost one). Consider this example of nested `try` blocks from the `try_except_nested.py` snippet, where we want to detect the pattern in the inner `try`:
 
 ```python [highlight-lines="1-9|4-7"][class="hide-line-numbers"]
 def strip_password(x: dict[str, str]) -> None:
